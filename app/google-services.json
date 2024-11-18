@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "666765196565",
+    "project_id": "safeproyect-f3cdf",
+    "storage_bucket": "safeproyect-f3cdf.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:666765196565:android:c2fa735936653bb5f43d1c",
+        "android_client_info": {
+          "package_name": "com.example.testmapboxkotlin"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDpc4buNB8rhmNsPmi-sKkIt89lDT37d8Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

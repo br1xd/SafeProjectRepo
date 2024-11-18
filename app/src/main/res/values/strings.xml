@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">TestMapboxKotlin</string>
+    <string name="title_activity_add_report">AddReport</string>
+</resources>
