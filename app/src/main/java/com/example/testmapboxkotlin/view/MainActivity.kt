@@ -11,6 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
+import com.example.testmapboxkotlin.model.Reportes
+import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -48,27 +50,33 @@ class MainActivity : AppCompatActivity() {
         locationManager = LocationManager(this)
 
         // Obtener ubicación
-
-
         mapView = findViewById(R.id.mapView)
 
-        //Marcadores
-        // Create an instance of the Annotation API and get the PointAnnotationManager.
-        val annotationApi = mapView.annotations
-        val pointAnnotationManager = annotationApi?.createPointAnnotationManager()
-        // Set options for the resulting symbol layer.
-        val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker);
-        val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
-            // Define a geographic coordinate.
-            .withPoint(Point.fromLngLat( -70.7067,-33.4430))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
-                                                                             //(reportes) se le saque sus coordenadas, esto se debe hacer emn viewModel
-                                                                            //Tambien, se debe incluir la id del reporte;
 
-            // Specify the bitmap you assigned to the point annotation
-            // The bitmap will be added to map style automatically.
-            .withIconImage(icon)
-        // Add the resulting pointAnnotation to the map.
-        pointAnnotationManager?.create(pointAnnotationOptions)
+        val list = ReporteViewModel.findAll();
+            // 'for'-loops work for Java collections:
+        for (r:Reportes in list) {
+                val lat : Double = r.lat.toDouble()
+                val lgt : Double = r.log.toDouble()
+                val annotationApi = mapView.annotations
+                val pointAnnotationManager = annotationApi?.createPointAnnotationManager()
+                // Set options for the resulting symbol layer.
+                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker);
+                val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                    // Define a geographic coordinate.
+                    .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
+                    //(reportes) se le saque sus coordenadas, esto se debe hacer emn viewModel
+                    //Tambien, se debe incluir la id del reporte;
+
+                    // Specify the bitmap you assigned to the point annotation
+                    // The bitmap will be added to map style automatically.
+                    .withIconImage(icon)
+                // Add the resulting pointAnnotation to the map.
+                pointAnnotationManager?.create(pointAnnotationOptions)
+
+            }
+        //Marcadores
+
 
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
