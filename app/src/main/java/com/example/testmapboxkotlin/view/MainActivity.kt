@@ -2,10 +2,8 @@ package com.example.testmapboxkotlin.view
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
@@ -33,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        reportVwModel.getAllReport();
+        reportVwModel.getAllReport()
         //Uso de el manager de locacion
         locationManager = LocationManager(this)
 
@@ -47,9 +45,9 @@ class MainActivity : AppCompatActivity() {
                 val lat : Double = r.lat.toDouble()
                 val lgt : Double = r.log.toDouble()
                 val annotationApi = mapView.annotations
-                val pointAnnotationManager = annotationApi?.createPointAnnotationManager()
+                val pointAnnotationManager = annotationApi.createPointAnnotationManager()
                 // Set options for the resulting symbol layer.
-                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker);
+                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
                 val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                     // Define a geographic coordinate.
                     .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
@@ -60,7 +58,7 @@ class MainActivity : AppCompatActivity() {
                     // The bitmap will be added to map style automatically.
                     .withIconImage(icon)
                 // Add the resulting pointAnnotation to the map.
-                pointAnnotationManager?.create(pointAnnotationOptions)
+                pointAnnotationManager.create(pointAnnotationOptions)
 
                 }
             }
