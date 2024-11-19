@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
                 val pointAnnotationManager = annotationApi.createPointAnnotationManager()
                 // Set options for the resulting symbol layer.
                 val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
-                val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
+                val resizedIcon = Bitmap.createScaledBitmap(icon, 60*1, 96*1, false)
                 val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                     // Define a geographic coordinate.
                     .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
