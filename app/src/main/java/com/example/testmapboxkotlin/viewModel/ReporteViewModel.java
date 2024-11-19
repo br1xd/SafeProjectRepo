@@ -18,11 +18,11 @@ import com.google.firebase.firestore.EventListener;
 
 
 public class ReporteViewModel extends ViewModel {
+
     private static final ArrayList<Reportes> listaReportes = new ArrayList<>();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference ReportCollection = firestore.collection("report-collection");
     private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
-
 
 
 // ...
@@ -64,13 +64,16 @@ public class ReporteViewModel extends ViewModel {
                         Reportes report = new Reportes(id,tipo,fecha,autor,lat,log);
                         if (report != null) {
                             listaReportes.add(report);
+                            listaReportesLiveData.setValue(listaReportes);
                             Log.d("TAG", "No haydfsfsdfsdfonibles");
                         }
                         else{
                             Log.d("asdf","sad");
                         }
+
+
                     }
-                    listaReportesLiveData.postValue(listaReportes);
+
                 } else {
                     Log.d("TAG", "No hay datos disponibles");
                 }

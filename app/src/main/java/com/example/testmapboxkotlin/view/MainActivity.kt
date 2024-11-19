@@ -32,40 +32,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        mapView = findViewById(R.id.mapView)
+        addReporteMarker()
         reportVwModel.getAllReport()
         //Uso de el manager de locacion
         locationManager = LocationManager(this)
-
         // Obtener view del mapa
-        mapView = findViewById(R.id.mapView)
 
         //val reporteViewModel = ViewModelProvider(this).get(ReporteViewModel::class.java)
-        reportVwModel.getListaReportes().observe(this){list ->
-            if (list != null) {
-            for (r:Reportes in list) {
-                val lat : Double = r.lat.toDouble()
-                val lgt : Double = r.log.toDouble()
-                val annotationApi = mapView.annotations
-                val pointAnnotationManager = annotationApi.createPointAnnotationManager()
-                // Set options for the resulting symbol layer.
-                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
-                val resizedIcon = Bitmap.createScaledBitmap(icon, 60*1, 96*1, false)
-                val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
-                    // Define a geographic coordinate.
-                    .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
-                    //(reportes) se le saque sus coordenadas, esto se debe hacer emn viewModel
-                    //Tambien, se debe incluir la id del reportee;
 
-                    // Specify the bitmap you assigned to the point annotation
-                    // The bitmap will be added to map style automatically.
-                    .withIconImage(resizedIcon)
-                // Add the resulting pointAnnotation to the map.
-                pointAnnotationManager.create(pointAnnotationOptions)
 
-                }
-            }
-
-        }
 
         //Marcadores
 
@@ -123,6 +99,36 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+    private fun addReporteMarker(){
+        val annotationApi = mapView.annotations
+        val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+
+        reportVwModel.getListaReportes().observe(this){list ->
+            if (list != null) {
+
+
+                pointAnnotationManager.deleteAll()
+                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
+                val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
+                for (r:Reportes in list) {
+                    val lat : Double = r.lat.toDouble()
+                    val lgt : Double = r.log.toDouble()
+
+                    val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
+                        // Define a geographic coordinate.
+                        .withPoint(Point.fromLngLat( lgt,lat))
+                        // Specify the bitmap you assigned to the point annotation
+                        // The bitmap will be added to map style automatically.
+                        .withIconImage(resizedIcon)
+                    // Add the resulting pointAnnotation to the map.
+                    pointAnnotationManager.create(pointAnnotationOptions)
+
+                }
+            }
+
+        }
+    }
     var permissionsListener: PermissionsListener = object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: List<String>) {
 
