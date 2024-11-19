@@ -1,14 +1,28 @@
 package com.example.testmapboxkotlin.view
 
+import android.Manifest
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.type.DateTime
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
+import com.mapbox.common.location.AccuracyLevel
+import com.mapbox.common.location.DeviceLocationProvider
+import com.mapbox.common.location.IntervalSettings
+import com.mapbox.common.location.LocationProviderRequest
+import com.mapbox.common.location.LocationService
+import com.mapbox.common.location.LocationServiceFactory
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -23,13 +37,21 @@ import java.util.Date
 
 
 class MainActivity : AppCompatActivity() {
-
+    private lateinit var locationManager: LocationManager
     private lateinit var mapView: MapView
     lateinit var permissionsManager: PermissionsManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        //Uso de el manager de locacion
+        locationManager = LocationManager(this)
+
+        // Obtener ubicación
+
+
         mapView = findViewById(R.id.mapView)
+
         //Marcadores
         // Create an instance of the Annotation API and get the PointAnnotationManager.
         val annotationApi = mapView.annotations
@@ -55,16 +77,27 @@ class MainActivity : AppCompatActivity() {
             permissionsManager.requestLocationPermissions(this)
         }
 
+
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.Creation_btn -> {
-                    val intent = Intent(this, AddReportActivity::class.java)
-                    startActivity(intent)
-                    true
+                    locationManager.getCurrentLocation { latitude, longitude ->
+                        // Aquí tienes la latitud y longitud
+                        Log.d("Ubicación", "Lat: $latitude, Long: $longitude")
+
+                        // Mueve el Intent DENTRO del callback
+                        val intent = Intent(this, AddReportActivity::class.java).apply {
+                            putExtra("long", longitude) //Le pasamos a la siguiente actividad la longitud
+                            putExtra("lat", latitude)   // y latitud
+                        }
+                        startActivity(intent)
+                    }
+                    true // Retorna true aquí para indicar que el ítem fue seleccionado
                 }
                 else -> false
             }
+
         }
 
         // Create a map programmatically and set the initial camera

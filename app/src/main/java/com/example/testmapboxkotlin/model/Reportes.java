@@ -39,11 +39,32 @@ public class Reportes {
 
     private String autor;
 
-    public Reportes(String id, String tipo, String fecha, String autor) {
+    private String lat;
+
+    public String getLog() {
+        return log;
+    }
+
+    public void setLog(String log) {
+        this.log = log;
+    }
+
+    private String log;
+
+    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
         this.autor = autor;
+        this.lat = lat;
+        this.log = log;
     }
 
+    public String getLat() {
+        return lat;
+    }
+
+    public void setLat(String lat) {
+        this.lat = lat;
+    }
 }

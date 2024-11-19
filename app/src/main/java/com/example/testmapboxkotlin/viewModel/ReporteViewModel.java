@@ -1,5 +1,11 @@
 package com.example.testmapboxkotlin.viewModel;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
+import android.content.Context;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -31,11 +37,14 @@ public class ReporteViewModel extends ViewModel {
     public static ArrayList<Reportes> findAll(){
         return listaReportes;
     }
+
 // ...
 
-    public void addReport(String Tipo, String fecha) {
+
+    public void addReport(String Tipo, String fecha, String lat, String log) {
+
         // Crea un nuevo objeto Modelo y lo agrega a Firebase
-        Reportes report = new Reportes(""+Math.random()*10,Tipo, DateTime.getDefaultInstance().toString(),"autor");
+        Reportes report = new Reportes(""+Math.random()*10,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log);
         ReportCollection.
                 document(report.getId()).
                 set(report);
@@ -59,9 +68,11 @@ public class ReporteViewModel extends ViewModel {
                     for (DocumentSnapshot document : snapshots.getDocuments()) {
                         String id = document.getString("id");
                         String autor = document.getString("autor");
-                        String fecha = document.getString("id");
-                        String tipo = document.getString("id");
-                        Reportes report = new Reportes(id,tipo,fecha,autor);
+                        String fecha = document.getString("fecha");
+                        String tipo = document.getString("tipo");
+                        String lat = document.getString("lat");
+                        String log = document.getString("log");
+                        Reportes report = new Reportes(id,tipo,fecha,autor,lat,log);
                         if (report != null) {
                             listaReportes.add(report);
                             Log.d("TAG", "No haydfsfsdfsdfonibles");
