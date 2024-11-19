@@ -1,5 +1,6 @@
 package com.example.testmapboxkotlin.view
 import android.content.Intent
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.viewModels
@@ -48,6 +49,7 @@ class MainActivity : AppCompatActivity() {
                 val pointAnnotationManager = annotationApi.createPointAnnotationManager()
                 // Set options for the resulting symbol layer.
                 val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
+                val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
                 val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                     // Define a geographic coordinate.
                     .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
@@ -56,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
                     // Specify the bitmap you assigned to the point annotation
                     // The bitmap will be added to map style automatically.
-                    .withIconImage(icon)
+                    .withIconImage(resizedIcon)
                 // Add the resulting pointAnnotation to the map.
                 pointAnnotationManager.create(pointAnnotationOptions)
 
@@ -64,8 +66,6 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
-
-
 
         //Marcadores
 
@@ -75,7 +75,6 @@ class MainActivity : AppCompatActivity() {
             permissionsManager = PermissionsManager(this.permissionsListener)
             permissionsManager.requestLocationPermissions(this)
         }
-
 
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
@@ -123,8 +122,6 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
-
 
     var permissionsListener: PermissionsListener = object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: List<String>) {
