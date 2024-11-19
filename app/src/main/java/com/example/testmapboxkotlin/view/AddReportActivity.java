@@ -1,7 +1,6 @@
 package com.example.testmapboxkotlin.view;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -9,7 +8,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.testmapboxkotlin.R;
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel;
-import com.example.testmapboxkotlin.viewModel.ReportesRepositorio;
 
 public class AddReportActivity extends AppCompatActivity {
     ReporteViewModel ViewModelRep = new ReporteViewModel();
