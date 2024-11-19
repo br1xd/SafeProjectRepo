@@ -10,6 +10,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
 import com.example.testmapboxkotlin.model.Reportes;
@@ -26,6 +28,8 @@ import org.w3c.dom.Comment;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.List;
+
 import com.google.firebase.firestore.EventListener;
 
 
@@ -34,13 +38,15 @@ public class ReporteViewModel extends ViewModel {
     private static ArrayList<Reportes> listaReportes = new ArrayList<>();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference ReportCollection = firestore.collection("report-collection");
-    public static ArrayList<Reportes> findAll(){
-        return listaReportes;
-    }
+    private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
+
+
 
 // ...
 
-
+    public LiveData<List<Reportes>> getListaReportes() {
+        return listaReportesLiveData;
+    }
     public void addReport(String Tipo, String fecha, String lat, String log) {
 
         // Crea un nuevo objeto Modelo y lo agrega a Firebase
@@ -77,8 +83,11 @@ public class ReporteViewModel extends ViewModel {
                             listaReportes.add(report);
                             Log.d("TAG", "No haydfsfsdfsdfonibles");
                         }
+                        else{
+                            Log.d("asdf","sad");
+                        }
                     }
-
+                    listaReportesLiveData.postValue(listaReportes);
                     Log.d("TAG", "Documentos obtenidos: " + listaReportes.toString());
                 } else {
                     Log.d("TAG", "No hay datos disponibles");

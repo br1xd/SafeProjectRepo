@@ -1,30 +1,18 @@
 package com.example.testmapboxkotlin.view
-
-import android.Manifest
-import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.lifecycle.ViewModelProvider
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.type.DateTime
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
-import com.mapbox.common.location.AccuracyLevel
-import com.mapbox.common.location.DeviceLocationProvider
-import com.mapbox.common.location.IntervalSettings
-import com.mapbox.common.location.LocationProviderRequest
-import com.mapbox.common.location.LocationService
-import com.mapbox.common.location.LocationServiceFactory
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
@@ -35,27 +23,27 @@ import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.viewport
-import java.util.Date
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var locationManager: LocationManager
     private lateinit var mapView: MapView
+    private val reportVwModel : ReporteViewModel by viewModels()
     lateinit var permissionsManager: PermissionsManager
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
+        reportVwModel.getAllReport();
         //Uso de el manager de locacion
         locationManager = LocationManager(this)
 
-        // Obtener ubicación
+        // Obtener view del mapa
         mapView = findViewById(R.id.mapView)
 
-
-        val list = ReporteViewModel.findAll();
-            // 'for'-loops work for Java collections:
-        for (r:Reportes in list) {
+        //val reporteViewModel = ViewModelProvider(this).get(ReporteViewModel::class.java)
+        reportVwModel.getListaReportes().observe(this){list ->
+            if (list != null) {
+            for (r:Reportes in list) {
                 val lat : Double = r.lat.toDouble()
                 val lgt : Double = r.log.toDouble()
                 val annotationApi = mapView.annotations
@@ -74,9 +62,14 @@ class MainActivity : AppCompatActivity() {
                 // Add the resulting pointAnnotation to the map.
                 pointAnnotationManager?.create(pointAnnotationOptions)
 
+                }
             }
-        //Marcadores
 
+        }
+
+
+
+        //Marcadores
 
         if (PermissionsManager.areLocationPermissionsGranted(this)) {
             // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
@@ -91,8 +84,6 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.Creation_btn -> {
                     locationManager.getCurrentLocation { latitude, longitude ->
-                        // Aquí tienes la latitud y longitud
-                        Log.d("Ubicación", "Lat: $latitude, Long: $longitude")
 
                         // Mueve el Intent DENTRO del callback
                         val intent = Intent(this, AddReportActivity::class.java).apply {
