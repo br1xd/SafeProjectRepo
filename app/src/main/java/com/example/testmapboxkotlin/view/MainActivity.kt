@@ -54,7 +54,7 @@ class MainActivity : AppCompatActivity() {
                     // Define a geographic coordinate.
                     .withPoint(Point.fromLngLat( lgt,lat))  //Ideas para coordenadas de reportes, un clico for donde cada elemento
                     //(reportes) se le saque sus coordenadas, esto se debe hacer emn viewModel
-                    //Tambien, se debe incluir la id del reporte;
+                    //Tambien, se debe incluir la id del reportee;
 
                     // Specify the bitmap you assigned to the point annotation
                     // The bitmap will be added to map style automatically.
