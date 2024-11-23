@@ -30,10 +30,10 @@ public class ReporteViewModel extends ViewModel {
     public LiveData<List<Reportes>> getListaReportes() {
         return listaReportesLiveData;
     }
-    public void addReport(String Tipo, String fecha, String lat, String log) {
+    public void addReport(String Tipo, String fecha, String lat, String log,Boolean denunciado) {
 
         // Crea un nuevo objeto Modelo y lo agrega a Firebase
-        Reportes report = new Reportes(""+Math.random()*10,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log);
+        Reportes report = new Reportes(""+Math.random()*10,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log,denunciado);
         ReportCollection.
                 document(report.getId()).
                 set(report);
@@ -61,7 +61,8 @@ public class ReporteViewModel extends ViewModel {
                         String tipo = document.getString("tipo");
                         String lat = document.getString("lat");
                         String log = document.getString("log");
-                        Reportes report = new Reportes(id,tipo,fecha,autor,lat,log);
+                        Boolean denunciado = document.getBoolean("denunciado");
+                        Reportes report = new Reportes(id,tipo,fecha,autor,lat,log,denunciado);
                         if (report != null) {
                             listaReportes.add(report);
                             listaReportesLiveData.setValue(listaReportes);

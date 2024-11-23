@@ -39,7 +39,7 @@ public class AddReportActivity extends AppCompatActivity {
 
             String tipo= tipoTv.getText().toString();
             String fecha= fechaTv.getText().toString();
-            ViewModelRep.addReport(tipo,fecha,""+lat,""+log);
+            ViewModelRep.addReport(tipo,fecha,""+lat,""+log,Boolean.FALSE);
 
         });
         back_btn.setOnClickListener(view -> {

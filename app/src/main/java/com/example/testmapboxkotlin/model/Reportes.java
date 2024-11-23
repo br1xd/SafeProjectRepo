@@ -50,14 +50,16 @@ public class Reportes {
     }
 
     private String log;
+    private Boolean denunciado;
 
-    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log) {
+    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log, Boolean denunciado) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
         this.autor = autor;
         this.lat = lat;
         this.log = log;
+        this.denunciado = denunciado;
     }
 
     public String getLat() {
@@ -66,5 +68,13 @@ public class Reportes {
 
     public void setLat(String lat) {
         this.lat = lat;
+    }
+
+    public Boolean getDenunciado() {
+        return denunciado;
+    }
+
+    public void setDenunciado(Boolean denunciado) {
+        this.denunciado = denunciado;
     }
 }

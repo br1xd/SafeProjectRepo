@@ -3,13 +3,16 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.Point
@@ -103,6 +106,7 @@ class MainActivity : AppCompatActivity() {
     private fun addReporteMarker(){
         val annotationApi = mapView.annotations
         val pointAnnotationManager = annotationApi.createPointAnnotationManager()
+        val markers = mutableMapOf<String, Reportes>()
 
         reportVwModel.getListaReportes().observe(this){list ->
             if (list != null) {
@@ -121,12 +125,39 @@ class MainActivity : AppCompatActivity() {
                         // Specify the bitmap you assigned to the point annotation
                         // The bitmap will be added to map style automatically.
                         .withIconImage(resizedIcon)
+                        .withData(JsonObject().apply {
+                            addProperty("id", r.id) // Asociamos un identificador único
+
+                        })
+
+
                     // Add the resulting pointAnnotation to the map.
-                    pointAnnotationManager.create(pointAnnotationOptions)
+                    //pointAnnotationManager.create(pointAnnotationOptions)
+                    val annotation = pointAnnotationManager.create(pointAnnotationOptions)
+                    markers[annotation.id] = r
+
+                    pointAnnotationManager.addClickListener { annotation ->
+                        val report = markers[annotation.id]
+                        if (report != null) {
+                            Log.d("TAG REPORTE", report.autor)
+                            showInfoWindow(report)
+                        }
+                        Log.d("TAG REPORTE", "NULL")
+                        true // Retorna `true` para indicar que el evento fue manejado
+                    }
 
                 }
             }
 
+        }
+
+    }
+    private fun showInfoWindow(report: Reportes) {
+        AlertDialog.Builder(this).apply {
+            setTitle("Reporte")
+            setMessage("Tipo: ${report.tipo}\nAutor: ${report.autor}")
+            setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            show()
         }
     }
     var permissionsListener: PermissionsListener = object : PermissionsListener {
