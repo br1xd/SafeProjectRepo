@@ -16,6 +16,12 @@
         android:theme="@style/Theme.TestMapboxKotlin"
         tools:targetApi="31">
         <activity
+            android:name=".view.AuthActivity"
+            android:exported="true"
+            android:theme="@style/Theme.TestMapboxKotlin" />
+
+
+        <activity
             android:name=".view.AddReportActivity"
             android:exported="false"
             android:label="@string/title_activity_add_report"

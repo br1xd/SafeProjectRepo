@@ -52,6 +52,8 @@ dependencies {
     implementation("androidx.core:core-ktx:1.9.0")
     implementation(platform("com.google.firebase:firebase-bom:33.6.0"))
     implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.android.gms:play-services-auth:21.2.0")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.mapbox.maps:android:11.7.1")
     implementation(platform("com.google.firebase:firebase-bom:32.7.1"))

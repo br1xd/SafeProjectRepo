@@ -4,14 +4,20 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-11-19T21:01:22.055769100Z">
+        <DropdownSelection timestamp="2024-11-20T02:20:45.690350Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="PhysicalDevice" identifier="serial=f6ivytcmpvvgpbbu" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Br1\.android\avd\Pixel_9_Pro_API_31.avd" />
             </handle>
           </Target>
         </DropdownSelection>
         <DialogSelection />
+      </SelectionState>
+      <SelectionState runConfigName="AddReportActivity">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="PhoneVerificationActivity">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>
