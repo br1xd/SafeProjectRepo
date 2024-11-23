@@ -16,9 +16,8 @@
         android:theme="@style/Theme.TestMapboxKotlin"
         tools:targetApi="31">
         <activity
-            android:name=".view.AuthActivity"
-            android:exported="true"
-            android:theme="@style/Theme.TestMapboxKotlin" />
+            android:name=".view.MainActivity"
+            android:exported="true" />
 
 
         <activity
@@ -27,7 +26,8 @@
             android:label="@string/title_activity_add_report"
             android:theme="@style/Theme.TestMapboxKotlin" />
         <activity
-            android:name=".view.MainActivity"
+            android:name=".view.AuthActivity"
+            android:theme="@style/Theme.TestMapboxKotlin"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
