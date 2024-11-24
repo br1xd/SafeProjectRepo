@@ -4,8 +4,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -163,6 +166,7 @@ class MainActivity : AppCompatActivity() {
         val imageView = view.findViewById<ImageView>(R.id.dialog_image)
         val titleView = view.findViewById<TextView>(R.id.dialog_title)
         val authorView = view.findViewById<TextView>(R.id.dialog_author)
+        val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
 
         // Glide es una libreria que carga imagenes de url
         Log.d("TAG IMAGEN",report.image_url)
@@ -175,6 +179,12 @@ class MainActivity : AppCompatActivity() {
         // Configurar texto
         titleView.text = "Tipo: ${report.tipo}"
         authorView.text = "Autor: ${report.autor}"
+        val firestore = FirebaseFirestore.getInstance()
+        val ReportCollection = firestore.collection("report-collection")
+        btnRpt.setOnClickListener({
+            Toast.makeText(this,"Ha sido reportado",Toast.LENGTH_SHORT).show()
+            ReportCollection.document(report.id).update("denunciado",true)
+            })
 
         // Crear y mostrar el diálogo
         AlertDialog.Builder(this).apply {
@@ -182,6 +192,7 @@ class MainActivity : AppCompatActivity() {
             setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             show()
         }
+
     }
     var permissionsListener: PermissionsListener = object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: List<String>) {
