@@ -42,6 +42,7 @@ public class ReporteViewModel extends ViewModel {
         imageRef.putFile(imagen_uri).addOnSuccessListener(taskSnapshot -> {
             imageRef.getDownloadUrl().addOnSuccessListener(url -> {
                 String imageUrl = url.toString();
+                Log.d("TAG IMAGE URL",imageUrl);
                 Reportes report = new Reportes(reportId,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log,denunciado,imageUrl);
                 ReportCollection.
                         document(report.getId()).
@@ -77,8 +78,8 @@ public class ReporteViewModel extends ViewModel {
                         String lat = document.getString("lat");
                         String log = document.getString("log");
                         Boolean denunciado = document.getBoolean("denunciado");
-                        String imageUrl = document.getString("imageUrl");
-                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,imageUrl);
+                        String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url);
                         if (report != null) {
                             listaReportes.add(report);
                             listaReportesLiveData.setValue(listaReportes);

@@ -4,9 +4,12 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
@@ -153,9 +156,29 @@ class MainActivity : AppCompatActivity() {
 
     }
     private fun showInfoWindow(report: Reportes) {
+        // Inflar el diseño del diálogo personalizado
+        val view = layoutInflater.inflate(R.layout.reportvw_layout, null)
+
+        // Referencias a los elementos del diseño
+        val imageView = view.findViewById<ImageView>(R.id.dialog_image)
+        val titleView = view.findViewById<TextView>(R.id.dialog_title)
+        val authorView = view.findViewById<TextView>(R.id.dialog_author)
+
+        // Glide es una libreria que carga imagenes de url
+        Log.d("TAG IMAGEN",report.image_url)
+        Glide.with(this)
+            .load(report.image_url) // URL de la imagen
+            .placeholder(R.drawable.ic_launcher_background) // Imagen por defecto
+            .error(R.drawable.ic_launcher_background) // Imagen de error
+            .into(imageView)
+
+        // Configurar texto
+        titleView.text = "Tipo: ${report.tipo}"
+        authorView.text = "Autor: ${report.autor}"
+
+        // Crear y mostrar el diálogo
         AlertDialog.Builder(this).apply {
-            setTitle("Reporte")
-            setMessage("Tipo: ${report.tipo}\nAutor: ${report.autor}")
+            setView(view) // Establecer la vista personalizada
             setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             show()
         }
