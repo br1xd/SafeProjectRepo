@@ -119,12 +119,22 @@ class MainActivity : AppCompatActivity() {
 
 
                 pointAnnotationManager.deleteAll()
-                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
-                val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
+
                 for (r:Reportes in list) {
                     val lat : Double = r.lat.toDouble()
                     val lgt : Double = r.log.toDouble()
 
+                    val tipoFormateado= r.tipo.replaceFirstChar { it.lowercase() }
+                    val resourceName = "marker_${tipoFormateado}" // Construir el nombre del recurso
+                    val resourceId = applicationContext.resources.getIdentifier(resourceName, "drawable", applicationContext.packageName)
+                    val icon = if (resourceId != 0) {
+                        BitmapFactory.decodeResource(applicationContext.resources, resourceId)
+                    } else {
+                        // Si no se encuentra el recurso, puedes usar un recurso predeterminado o manejar el error
+                        BitmapFactory.decodeResource(applicationContext.resources, R.drawable.marker_custom) // Recurso predeterminado
+                    }
+
+                    val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
                     val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                         // Define a geographic coordinate.
                         .withPoint(Point.fromLngLat( lgt,lat))
@@ -183,7 +193,7 @@ class MainActivity : AppCompatActivity() {
         val ReportCollection = firestore.collection("report-collection")
         btnRpt.setOnClickListener({
             Toast.makeText(this,"Ha sido reportado",Toast.LENGTH_SHORT).show()
-            ReportCollection.document(report.id).update("denunciado",true)
+            ReportCollection.document(report.id).update("denunciado",true) //Solucion temporal, se debe agregar a otra coleccion y borrar de esta.
             })
 
         // Crear y mostrar el diálogo

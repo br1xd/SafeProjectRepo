@@ -13,8 +13,8 @@ import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.type.DateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import com.google.firebase.firestore.EventListener;
 
@@ -35,7 +35,7 @@ public class ReporteViewModel extends ViewModel {
     public LiveData<List<Reportes>> getListaReportes() {
         return listaReportesLiveData;
     }
-    public void addReport(String Tipo, String fecha, String lat, String log,Boolean denunciado, Uri imagen_uri) {
+    public void addReport(String Tipo, Date fecha, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida) {
         String reportId = ""+Math.random()*10;
         String imageName = "imagenes/" + reportId + ".jpg";
         StorageReference imageRef = storage.getReference().child(imageName);
@@ -43,7 +43,7 @@ public class ReporteViewModel extends ViewModel {
             imageRef.getDownloadUrl().addOnSuccessListener(url -> {
                 String imageUrl = url.toString();
                 Log.d("TAG IMAGE URL",imageUrl);
-                Reportes report = new Reportes(reportId,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log,denunciado,imageUrl);
+                Reportes report = new Reportes(reportId,Tipo, fecha,"autor",lat,log,denunciado,imageUrl,horasVida.intValue());
                 ReportCollection.
                         document(report.getId()).
                         set(report);
@@ -73,13 +73,14 @@ public class ReporteViewModel extends ViewModel {
                         //Reportes report = document.toObject(Reportes.class); probar luego  mapeo automatico
                         String id = document.getString("id");
                         String autor = document.getString("autor");
-                        String fecha = document.getString("fecha");
+                        Date fecha = document.getDate("fecha");
                         String tipo = document.getString("tipo");
                         String lat = document.getString("lat");
                         String log = document.getString("log");
                         Boolean denunciado = document.getBoolean("denunciado");
                         String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
-                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url);
+                        Integer tiempoDeVida = document.getLong("tiempoDeVida").intValue();
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida);
                         if (report != null) {
                             listaReportes.add(report);
                             listaReportesLiveData.setValue(listaReportes);

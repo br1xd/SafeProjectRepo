@@ -1,5 +1,7 @@
 package com.example.testmapboxkotlin.model;
 
+import java.util.Date;
+
 public class Reportes {
     public String getId() {
         return id;
@@ -17,17 +19,17 @@ public class Reportes {
         this.tipo = tipo;
     }
 
-    public String getFecha() {
+    public Date getFecha() {
         return fecha;
     }
 
-    public void setFecha(String fecha) {
+    public void setFecha(Date fecha) {
         this.fecha = fecha;
     }
 
     private String id;
     private String tipo;
-    private String fecha;
+    private Date fecha;
 
     public String getAutor() {
         return autor;
@@ -53,7 +55,10 @@ public class Reportes {
     private Boolean denunciado;
     private String image_url;
 
-    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl) {
+    private int tiempoDeVida; // Tiempo de vida en horas
+
+
+    public Reportes(String id, String tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl, int tiempoDeVida) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
@@ -62,6 +67,7 @@ public class Reportes {
         this.log = log;
         this.denunciado = denunciado;
         this.image_url = imageUrl;
+        this.tiempoDeVida = tiempoDeVida;
     }
 
     public String getLat() {
@@ -86,5 +92,13 @@ public class Reportes {
 
     public void setImage_url(String image_url) {
         this.image_url = image_url;
+    }
+
+    public int getTiempoDeVida() {
+        return tiempoDeVida;
+    }
+
+    public void setTiempoDeVida(int tiempoDeVida) {
+        this.tiempoDeVida = tiempoDeVida;
     }
 }
