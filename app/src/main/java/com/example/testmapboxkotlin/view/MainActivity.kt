@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
-import com.example.testmapboxkotlin.viewModel.ReporteViewModel
+import com.example.testmapboxkotlin.viewModel.ReporteViewModel;
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
@@ -146,6 +146,8 @@ class MainActivity : AppCompatActivity() {
                         true // Retorna `true` para indicar que el evento fue manejado
                     }
 
+                   
+
                 }
             }
 
@@ -155,7 +157,7 @@ class MainActivity : AppCompatActivity() {
     private fun showInfoWindow(report: Reportes) {
         AlertDialog.Builder(this).apply {
             setTitle("Reporte")
-            setMessage("Tipo: ${report.tipo}\nAutor: ${report.autor}")
+            setMessage("Tipo: ${report.tipo}\nAutor: ${report.autor}\nFecha: ${report.fecha}\"")
             setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             show()
         }
