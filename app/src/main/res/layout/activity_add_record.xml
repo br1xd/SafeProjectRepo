@@ -7,63 +7,80 @@
     android:background="#FFFFFF"
     android:backgroundTint="#FFFFFF">
 
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:layout_height="650dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="32dp"
-        android:layout_marginBottom="49dp"
-        android:backgroundTint="#FBFBFB"
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="120dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="vertical">
+            android:text="Introduzca el tipo de reporte"
+            android:textColor="#000000"
+            android:textColorHighlight="#000000" />
+        <Spinner
+            android:id="@+id/spinnerCategorias"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"/>
+        <EditText
+            android:id="@+id/TvTipo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:inputType="text"
+            android:minHeight="48dp"
+            android:text="Tipo" />
 
-            <TextView
-                android:id="@+id/textView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Introduzca el tipo de reporte"
-                android:textColor="#000000"
-                android:textColorHighlight="#000000" />
+        <EditText
+            android:id="@+id/Tv_TiempoVida"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="Duración en minutos..."
+            android:inputType="number"
+            android:minHeight="48dp" />
 
-            <EditText
-                android:id="@+id/TvTipo"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text"
-                android:minHeight="48dp"
-                android:text="Tipo" />
+        <Button
+            android:id="@+id/btnSelectImage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tomar foto" />
 
-            <EditText
-                android:id="@+id/TvFecha"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:ems="10"
-                android:inputType="text"
-                android:minHeight="48dp"
-                android:text="Fecha" />
+        <Button
+            android:id="@+id/btn_audio"
+            android:layout_width="199dp"
+            android:layout_height="wrap_content"
+            android:text="Grabar audio" />
 
-            <Button
-                android:id="@+id/submit_btn"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:backgroundTint="#B10909"
-                android:text="Reportar"
-                android:textColor="#FAFAFA"
-                android:textColorHighlight="#FDFCFC"
-                app:icon="@android:drawable/stat_sys_warning"
-                app:iconTint="#FDFDFD" />
+        <Button
+            android:id="@+id/submit_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="#B10909"
+            android:text="Reportar"
+            android:textColor="#FAFAFA"
+            android:textColorHighlight="#FDFCFC"
+            app:icon="@android:drawable/stat_sys_warning"
+            app:iconTint="#FDFDFD" />
 
-        </LinearLayout>
+        <ImageView
+            android:id="@+id/imageView"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            android:layout_marginTop="16dp"
+            android:contentDescription="Vista previa de imagen"
+            android:scaleType="centerCrop" />
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -85,6 +102,6 @@
                 app:iconTint="#FAFAFA" />
         </LinearLayout>
 
-    </androidx.cardview.widget.CardView>
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,46 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Imagen del reporte -->
+    <ImageView
+        android:id="@+id/dialog_image"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:scaleType="centerCrop"
+        android:contentDescription="@string/imagen_del_reporte"
+         />
+
+    <!-- Tipo del reporte -->
+    <TextView
+        android:id="@+id/dialog_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/tipo"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <!-- Autor del reporte -->
+    <TextView
+        android:id="@+id/dialog_author"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/autor"
+        android:textSize="16sp" />
+
+    <ImageButton
+        android:id="@+id/btn_rpt"
+        android:layout_width="70dp"
+        android:layout_height="70dp"
+        android:layout_gravity="left"
+        android:background="@drawable/button_round"
+        app:srcCompat="@android:drawable/ic_dialog_alert" />
+
+
+</LinearLayout>

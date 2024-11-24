@@ -1,4 +1,5 @@
 package com.example.testmapboxkotlin.viewModel;
+import android.net.Uri;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -10,8 +11,10 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
-import com.google.type.DateTime;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import com.google.firebase.firestore.EventListener;
 
@@ -23,6 +26,8 @@ public class ReporteViewModel extends ViewModel {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference ReportCollection = firestore.collection("report-collection");
     private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
+    private final FirebaseStorage storage = FirebaseStorage.getInstance(); // Instancia de Firebase Storage
+
 
 
 // ...
@@ -30,15 +35,25 @@ public class ReporteViewModel extends ViewModel {
     public LiveData<List<Reportes>> getListaReportes() {
         return listaReportesLiveData;
     }
-    public void addReport(String Tipo, String fecha, String lat, String log,Boolean denunciado) {
-
+    public void addReport(String Tipo, Date fecha, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida) {
+        String reportId = ""+Math.random()*10;
+        String imageName = "imagenes/" + reportId + ".jpg";
+        StorageReference imageRef = storage.getReference().child(imageName);
+        imageRef.putFile(imagen_uri).addOnSuccessListener(taskSnapshot -> {
+            imageRef.getDownloadUrl().addOnSuccessListener(url -> {
+                String imageUrl = url.toString();
+                Log.d("TAG IMAGE URL",imageUrl);
+                Reportes report = new Reportes(reportId,Tipo, fecha,"autor",lat,log,denunciado,imageUrl,horasVida.intValue());
+                ReportCollection.
+                        document(report.getId()).
+                        set(report);
+            });
+        });
         // Crea un nuevo objeto Modelo y lo agrega a Firebase
-        Reportes report = new Reportes(""+Math.random()*10,Tipo, DateTime.getDefaultInstance().toString(),"autor",lat,log,denunciado);
-        ReportCollection.
-                document(report.getId()).
-                set(report);
+
         Log.d("PEPEXD",""+listaReportes.size());
     }
+
 
     public void getAllReport() {
         ReportCollection.addSnapshotListener(new EventListener<QuerySnapshot>() {
@@ -55,14 +70,17 @@ public class ReporteViewModel extends ViewModel {
                     Log.d("TAG", "No324234");
 
                     for (DocumentSnapshot document : snapshots.getDocuments()) {
+                        //Reportes report = document.toObject(Reportes.class); probar luego  mapeo automatico
                         String id = document.getString("id");
                         String autor = document.getString("autor");
-                        String fecha = document.getString("fecha");
+                        Date fecha = document.getDate("fecha");
                         String tipo = document.getString("tipo");
                         String lat = document.getString("lat");
                         String log = document.getString("log");
                         Boolean denunciado = document.getBoolean("denunciado");
-                        Reportes report = new Reportes(id,tipo,fecha,autor,lat,log,denunciado);
+                        String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
+                        Integer tiempoDeVida = document.getLong("tiempoDeVida").intValue();
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida);
                         if (report != null) {
                             listaReportes.add(report);
                             listaReportesLiveData.setValue(listaReportes);
