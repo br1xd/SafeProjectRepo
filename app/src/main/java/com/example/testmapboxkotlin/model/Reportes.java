@@ -51,8 +51,9 @@ public class Reportes {
 
     private String log;
     private Boolean denunciado;
+    private String image_url;
 
-    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log, Boolean denunciado) {
+    public Reportes(String id, String tipo, String fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
@@ -60,6 +61,7 @@ public class Reportes {
         this.lat = lat;
         this.log = log;
         this.denunciado = denunciado;
+        this.image_url = imageUrl;
     }
 
     public String getLat() {
@@ -76,5 +78,13 @@ public class Reportes {
 
     public void setDenunciado(Boolean denunciado) {
         this.denunciado = denunciado;
+    }
+
+    public String getImage_url() {
+        return image_url;
+    }
+
+    public void setImage_url(String image_url) {
+        this.image_url = image_url;
     }
 }

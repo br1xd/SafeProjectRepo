@@ -62,6 +62,20 @@
                 android:textColorHighlight="#FDFCFC"
                 app:icon="@android:drawable/stat_sys_warning"
                 app:iconTint="#FDFDFD" />
+            <Button
+                android:id="@+id/btnSelectImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Seleccionar Imagen" />
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
+                android:layout_marginTop="16dp"
+                android:contentDescription="Vista previa de imagen"
+                android:scaleType="centerCrop"
+                 />
 
         </LinearLayout>
 
