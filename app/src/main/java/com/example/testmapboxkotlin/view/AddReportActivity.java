@@ -15,7 +15,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
@@ -41,6 +40,7 @@ public class AddReportActivity extends AppCompatActivity {
     private Uri cameraImageUri;
     private ImageView imageView;
     private String tipoSeleccionado;
+    private Integer minutoSeleccionado;
 
     private FusedLocationProviderClient fusedLocationClient;
 
@@ -51,7 +51,34 @@ public class AddReportActivity extends AppCompatActivity {
         requestPermissions();
         setContentView(R.layout.activity_add_record);
 
-        Spinner spinnerCategorias = findViewById(R.id.spinnerCategorias);
+        List<Integer> minutos = new ArrayList<>();
+        minutos.add(15);
+        minutos.add(30);
+        minutos.add(45);
+        minutos.add(60);
+
+        Spinner spinnerMinutos = findViewById(R.id.spinnerTiempoVida);
+        ArrayAdapter<Integer> adapterMinutos = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, minutos);
+        adapterMinutos.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);  // Estilo de la lista desplegable
+
+        // Asignar el adaptador al Spinner
+        spinnerMinutos.setAdapter(adapterMinutos);
+
+        // Establecer un listener para cuando el usuario seleccione una categoría
+        spinnerMinutos.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
+                // Obtener la categoría seleccionada
+                minutoSeleccionado = minutos.get(position);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parentView) {
+
+            }
+        });
+        Spinner spinnerCategorias = findViewById(R.id.spinnerCategorias2);
+
 
         List<String> categorias = new ArrayList<>();
         categorias.add("Asalto");
@@ -80,11 +107,10 @@ public class AddReportActivity extends AppCompatActivity {
             }
         });
 
-        Button submit_btn = findViewById(R.id.submit_btn);
+        Button submit_btn = findViewById(R.id.edit_btn);
         Button back_btn = findViewById(R.id.back_btn);
-        TextView tipoTv = findViewById(R.id.TvTipo);
-        EditText horasTv = findViewById(R.id.Tv_TiempoVida);
         Button btnSelectImage = findViewById(R.id.btnSelectImage);
+        EditText descTv = findViewById(R.id.Tv_desc);
         imageView = findViewById(R.id.imageView);
 
         btnSelectImage.setOnClickListener(v -> openCamera());
@@ -99,13 +125,14 @@ public class AddReportActivity extends AppCompatActivity {
 
             //String tipo= tipoTv.getText().toString();
             Date fecha = new Date();
-            String horasVidaString = horasTv.getText().toString();
-
+            String horasVidaString = minutoSeleccionado.toString();
+            String descString = descTv.getText().toString();
             Long horasVida = 0L;
             if (!horasVidaString.isEmpty()) {
                 horasVida = Long.parseLong(horasVidaString);
             }
-            ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida);
+            ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida,descString);
+            Toast.makeText(this,"Agregando reporte, espere un momento...",Toast.LENGTH_SHORT);
 
         });
         back_btn.setOnClickListener(view -> {

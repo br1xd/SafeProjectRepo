@@ -7,14 +7,31 @@
     android:padding="16dp">
 
     <!-- Imagen del reporte -->
-    <ImageButton
-        android:id="@+id/btn_delete"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="right"
-        android:background="@drawable/button_round"
-        android:visibility="gone"
-        app:srcCompat="@android:drawable/ic_menu_delete" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="right"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@drawable/button_round"
+            android:visibility="gone"
+            app:srcCompat="@android:drawable/ic_menu_delete" />
+
+        <ImageButton
+            android:id="@+id/btn_edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            android:background="@drawable/button_round"
+            android:backgroundTint="#565350"
+            android:visibility="gone"
+            app:srcCompat="@android:drawable/ic_menu_edit" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/dialog_image"
@@ -43,19 +60,33 @@
         android:text="@string/autor"
         android:textSize="16sp" />
 
-    <ImageButton
-        android:id="@+id/btn_rpt"
-        android:layout_width="70dp"
-        android:layout_height="70dp"
-        android:layout_gravity="left"
-        android:background="@drawable/button_round"
-        app:srcCompat="@android:drawable/ic_dialog_alert" />
+    <TextView
+        android:id="@+id/tv_desc"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Descripción:" />
 
-    <ImageButton
-        android:id="@+id/btn_add_fav"
-        android:layout_width="74dp"
-        android:layout_height="80dp"
-        android:src="@drawable/img" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/btn_rpt"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_gravity="bottom|right|center_vertical|end"
+            android:background="@drawable/button_round"
+            app:srcCompat="@android:drawable/ic_dialog_alert" />
+
+        <ImageButton
+            android:id="@+id/btn_add_fav"
+            android:layout_width="74dp"
+            android:layout_height="80dp"
+            android:layout_gravity="left"
+            android:src="@drawable/img" />
+
+    </LinearLayout>
 
     <!-- Aquí coloca la imagen del corazón o la que desees -->
 

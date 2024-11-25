@@ -207,10 +207,20 @@ class MainActivity : AppCompatActivity() {
         val authorView = view.findViewById<TextView>(R.id.dialog_author)
         val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
         val btnAddFav = view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
+        val descView = view.findViewById<TextView>(R.id.tv_desc)
 
         if (currentUserEmail == report.autor){
             val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
+            val btnEditReport = view.findViewById<ImageButton>(R.id.btn_edit)
             btnDeleteReport.visibility = View.VISIBLE
+            btnEditReport.visibility = View.VISIBLE
+            btnEditReport.setOnClickListener{
+                val intent = Intent(this, EditReportActivity::class.java).apply {
+                    // Pasamos el correo del usuario como extra
+                    putExtra("reporteId", report.id)
+                }
+                startActivity(intent)
+            }
             btnDeleteReport.setOnClickListener{
                 reportVwModel.deleteReport(report.id)
             }
@@ -227,6 +237,7 @@ class MainActivity : AppCompatActivity() {
         // Configurar texto
         titleView.text = "Tipo: ${report.tipo}"
         authorView.text = "Autor: ${report.autor}"
+        descView.text = "Descripción: ${report.desc}"
         val firestore = FirebaseFirestore.getInstance()
         val ReportCollection = firestore.collection("report-collection")
         btnRpt.setOnClickListener({
