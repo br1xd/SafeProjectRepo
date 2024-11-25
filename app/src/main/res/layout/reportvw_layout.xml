@@ -42,5 +42,12 @@
         android:background="@drawable/button_round"
         app:srcCompat="@android:drawable/ic_dialog_alert" />
 
+    <ImageButton
+        android:id="@+id/btn_add_fav"
+        android:layout_width="74dp"
+        android:layout_height="80dp"
+        android:src="@drawable/img" />  <!-- Aquí coloca la imagen del corazón o la que desees -->
+
+
 
 </LinearLayout>

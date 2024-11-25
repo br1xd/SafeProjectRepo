@@ -4,14 +4,21 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.widget.ImageButton
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
 import com.example.testmapboxkotlin.model.Reportes
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -26,15 +33,27 @@ import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.viewport
 
-
 class MainActivity : AppCompatActivity() {
     private lateinit var locationManager: LocationManager
     private lateinit var mapView: MapView
     private val reportVwModel : ReporteViewModel by viewModels()
     lateinit var permissionsManager: PermissionsManager
+    private lateinit var currentUserEmail: String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
+            currentUserEmail = currentUser.email ?: ""  // Guardamos el correo del usuario logueado
+        } else {
+            Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
+        }
+
+
+
+
         mapView = findViewById(R.id.mapView)
         addReporteMarker()
         reportVwModel.getAllReport()
@@ -113,12 +132,22 @@ class MainActivity : AppCompatActivity() {
 
 
                 pointAnnotationManager.deleteAll()
-                val icon = BitmapFactory.decodeResource(applicationContext.resources, R.drawable.red_marker)
-                val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
+
                 for (r:Reportes in list) {
                     val lat : Double = r.lat.toDouble()
                     val lgt : Double = r.log.toDouble()
 
+                    val tipoFormateado= r.tipo.replaceFirstChar { it.lowercase() }
+                    val resourceName = "marker_${tipoFormateado}" // Construir el nombre del recurso
+                    val resourceId = applicationContext.resources.getIdentifier(resourceName, "drawable", applicationContext.packageName)
+                    val icon = if (resourceId != 0) {
+                        BitmapFactory.decodeResource(applicationContext.resources, resourceId)
+                    } else {
+                        // Si no se encuentra el recurso, puedes usar un recurso predeterminado o manejar el error
+                        BitmapFactory.decodeResource(applicationContext.resources, R.drawable.marker_custom) // Recurso predeterminado
+                    }
+
+                    val resizedIcon = Bitmap.createScaledBitmap(icon, 60, 96, false)
                     val pointAnnotationOptions: PointAnnotationOptions = PointAnnotationOptions()
                         // Define a geographic coordinate.
                         .withPoint(Point.fromLngLat( lgt,lat))
@@ -153,12 +182,56 @@ class MainActivity : AppCompatActivity() {
 
     }
     private fun showInfoWindow(report: Reportes) {
+        // Inflar el diseño del diálogo personalizado
+        val view = layoutInflater.inflate(R.layout.reportvw_layout, null)
+
+        // Referencias a los elementos del diseño
+        val imageView = view.findViewById<ImageView>(R.id.dialog_image)
+        val titleView = view.findViewById<TextView>(R.id.dialog_title)
+        val authorView = view.findViewById<TextView>(R.id.dialog_author)
+        val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
+        val btnAddFav = view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
+
+        // Glide es una libreria que carga imagenes de url
+        Log.d("TAG IMAGEN",report.image_url)
+        Glide.with(this)
+            .load(report.image_url) // URL de la imagen
+            .placeholder(R.drawable.ic_launcher_background) // Imagen por defecto
+            .error(R.drawable.ic_launcher_background) // Imagen de error
+            .into(imageView)
+
+        // Configurar texto
+        titleView.text = "Tipo: ${report.tipo}"
+        authorView.text = "Autor: ${report.autor}"
+        val firestore = FirebaseFirestore.getInstance()
+        val ReportCollection = firestore.collection("report-collection")
+        btnRpt.setOnClickListener({
+            Toast.makeText(this,"Ha sido reportado",Toast.LENGTH_SHORT).show()
+            ReportCollection.document(report.id).update("denunciado",true) //Solucion temporal, se debe agregar a otra coleccion y borrar de esta.
+        })
+        btnAddFav.setOnClickListener {
+            if (currentUserEmail.isNotEmpty()) {
+                val favoritesCollection = firestore.collection("users")
+                    .document(currentUserEmail)  // Usamos el correo del usuario como identificador
+                    .collection("favorites")
+
+                favoritesCollection.document(report.id).set(report).addOnSuccessListener {
+                    Toast.makeText(this, "Agregado a favoritos", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener {
+                    Toast.makeText(this, "Error al agregar a favoritos", Toast.LENGTH_SHORT).show()
+                }
+            } else {
+                Toast.makeText(this, "Por favor, inicia sesión para agregar a favoritos", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Crear y mostrar el diálogo
         AlertDialog.Builder(this).apply {
-            setTitle("Reporte")
-            setMessage("Tipo: ${report.tipo}\nAutor: ${report.autor}")
+            setView(view) // Establecer la vista personalizada
             setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
             show()
         }
+
     }
     var permissionsListener: PermissionsListener = object : PermissionsListener {
         override fun onExplanationNeeded(permissionsToExplain: List<String>) {

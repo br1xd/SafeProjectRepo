@@ -5,9 +5,9 @@
         android:icon="@android:drawable/stat_notify_error"
         android:title="crear" />
     <item
-        android:id="@+id/ej1"
+        android:id="@+id/HistorialReportes"
         android:icon="@android:drawable/ic_popup_reminder"
-        android:title="ej1" />
+        android:title="historial" />
     <item
         android:id="@+id/ej2"
         android:icon="@android:drawable/ic_dialog_info"
