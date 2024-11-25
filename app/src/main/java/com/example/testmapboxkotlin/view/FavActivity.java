@@ -43,7 +43,8 @@ public class FavActivity extends AppCompatActivity {
         String userEmail = bundle.getString("userEmail");
 
         recyclerViewFavoritos = findViewById(R.id.recyclerViewFavoritos);
-        recyclerViewFavoritos.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewFavoritos.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
+
 
 
 

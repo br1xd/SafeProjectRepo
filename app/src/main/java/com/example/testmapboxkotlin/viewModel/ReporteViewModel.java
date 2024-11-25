@@ -37,8 +37,17 @@ public class ReporteViewModel extends ViewModel {
 
     public LiveData<List<Reportes>> getListaReportes() {return listaReportesLiveData;
     }
-
-    public void addReport(String Tipo, Date fecha, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida) {
+    public void deleteReport(String reportId){
+        for (Reportes r:
+             listaReportes) {
+            if(r.getId() == reportId){
+                ReportCollection.
+                        document(reportId)
+                        .delete();
+            }
+        }
+    }
+    public void addReport(String Tipo, Date fecha,String autor, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida) {
         String reportId = ""+Math.random()*10;
         String imageName = "imagenes/" + reportId + ".jpg";
         StorageReference imageRef = storage.getReference().child(imageName);
@@ -46,7 +55,7 @@ public class ReporteViewModel extends ViewModel {
             imageRef.getDownloadUrl().addOnSuccessListener(url -> {
                 String imageUrl = url.toString();
                 Log.d("TAG IMAGE URL",imageUrl);
-                Reportes report = new Reportes(reportId,Tipo, fecha,"autor",lat,log,denunciado,imageUrl,horasVida.intValue());
+                Reportes report = new Reportes(reportId,Tipo, fecha,autor,lat,log,denunciado,imageUrl,horasVida.intValue());
                 ReportCollection.
                         document(report.getId()).
                         set(report);

@@ -7,6 +7,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -91,6 +92,8 @@ public class AddReportActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         double log = bundle.getDouble("long");
         double lat = bundle.getDouble("lat");
+        String autor = bundle.getString("userEmail");
+        Log.d("autor",autor);
 
         submit_btn.setOnClickListener(view -> {
 
@@ -102,7 +105,7 @@ public class AddReportActivity extends AppCompatActivity {
             if (!horasVidaString.isEmpty()) {
                 horasVida = Long.parseLong(horasVidaString);
             }
-            ViewModelRep.addReport(tipoSeleccionado,fecha,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida);
+            ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida);
 
         });
         back_btn.setOnClickListener(view -> {

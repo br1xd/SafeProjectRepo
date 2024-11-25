@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -12,6 +13,7 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
@@ -84,6 +86,7 @@ class MainActivity : AppCompatActivity() {
                         val intent = Intent(this, AddReportActivity::class.java).apply {
                             putExtra("long", longitude) //Le pasamos a la siguiente actividad la longitud
                             putExtra("lat", latitude)   // y latitud
+                            putExtra("userEmail", currentUserEmail)
                         }
                         startActivity(intent)
                     }
@@ -204,6 +207,14 @@ class MainActivity : AppCompatActivity() {
         val authorView = view.findViewById<TextView>(R.id.dialog_author)
         val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
         val btnAddFav = view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
+
+        if (currentUserEmail == report.autor){
+            val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
+            btnDeleteReport.visibility = View.VISIBLE
+            btnDeleteReport.setOnClickListener{
+                reportVwModel.deleteReport(report.id)
+            }
+        }
 
         // Glide es una libreria que carga imagenes de url
         Log.d("TAG IMAGEN",report.image_url)
