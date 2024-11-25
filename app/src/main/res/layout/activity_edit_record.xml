@@ -3,8 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF"
-    android:backgroundTint="#FFFFFF">
+    android:background="#2E2B2B"
+    android:backgroundTint="#352F2F">
 
     <LinearLayout
         android:layout_width="wrap_content"
@@ -25,8 +25,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Modifica el reporte"
-            android:textColor="#000000"
-            android:textColorHighlight="#000000" />
+            android:textColor="#FFFCFC"
+            android:textColorHighlight="#F6F6F6" />
 
         <Spinner
             android:id="@+id/spinnerCategoriasEdit"
@@ -42,7 +42,8 @@
             android:ems="10"
             android:hint="Descripción..."
             android:inputType="text"
-            android:minHeight="48dp" />
+            android:minHeight="48dp"
+            android:shadowColor="#0F0E0E" />
 
         <Button
             android:id="@+id/edit_btn"

@@ -1,5 +1,6 @@
 package com.example.testmapboxkotlin.view;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -47,9 +48,9 @@ public class EditReportActivity extends AppCompatActivity {
         // Crear un adaptador para el Spinner
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, categorias);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);  // Estilo de la lista desplegable
-
         // Asignar el adaptador al Spinner
         spinnerCategorias.setAdapter(adapter);
+
 
         // Establecer un listener para cuando el usuario seleccione una categoría
         spinnerCategorias.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
