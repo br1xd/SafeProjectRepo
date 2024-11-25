@@ -23,18 +23,21 @@ import com.google.firebase.firestore.EventListener;
 public class ReporteViewModel extends ViewModel {
 
     private static final ArrayList<Reportes> listaReportes = new ArrayList<>();
+
+    private static final ArrayList<Reportes> listaFavoritos = new ArrayList<>();
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference ReportCollection = firestore.collection("report-collection");
+
     private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
+    private final MutableLiveData<List<Reportes>> listaFavoritosLiveData = new MutableLiveData<>();
     private final FirebaseStorage storage = FirebaseStorage.getInstance(); // Instancia de Firebase Storage
 
-
-
-// ...
-
-    public LiveData<List<Reportes>> getListaReportes() {
-        return listaReportesLiveData;
+    public LiveData<List<Reportes>> getListaFavoritos() {return listaFavoritosLiveData;
     }
+
+    public LiveData<List<Reportes>> getListaReportes() {return listaReportesLiveData;
+    }
+
     public void addReport(String Tipo, Date fecha, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida) {
         String reportId = ""+Math.random()*10;
         String imageName = "imagenes/" + reportId + ".jpg";
@@ -99,6 +102,55 @@ public class ReporteViewModel extends ViewModel {
             }
         });
     }
+
+    public void getAllReportFavorites(String users) {
+        CollectionReference ReportFavorites = firestore.collection("users")
+                .document(users)  // Usamos el correo del usuario como identificador
+                .collection("favorites");
+        ReportFavorites.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot snapshots,
+                                @Nullable FirebaseFirestoreException e) {
+                if (e != null) {
+                    Log.w("TAG", "Listen failed.", e);
+                    return;
+                }
+
+                if (snapshots != null && !snapshots.isEmpty()) {
+                    listaFavoritos.clear();
+                    Log.d("TAG", "No324234");
+
+                    for (DocumentSnapshot document : snapshots.getDocuments()) {
+                        //Reportes report = document.toObject(Reportes.class); probar luego  mapeo automatico
+                        String id = document.getString("id");
+                        String autor = document.getString("autor");
+                        Date fecha = document.getDate("fecha");
+                        String tipo = document.getString("tipo");
+                        String lat = document.getString("lat");
+                        String log = document.getString("log");
+                        Boolean denunciado = document.getBoolean("denunciado");
+                        String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
+                        Integer tiempoDeVida = document.getLong("tiempoDeVida").intValue();
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida);
+                        if (report != null) {
+                            listaFavoritos.add(report);
+                            listaFavoritosLiveData.setValue(listaFavoritos);
+                            Log.d("TAG", "No haydfsfsdfsdfonibles");
+                        }
+                        else{
+                            Log.d("asdf","sad");
+                        }
+
+
+                    }
+
+                } else {
+                    Log.d("TAG", "No hay datos disponibles");
+                }
+            }
+        });
+    }
+
 
 
 }

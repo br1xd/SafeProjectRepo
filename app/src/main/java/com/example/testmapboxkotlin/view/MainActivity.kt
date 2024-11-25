@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -73,7 +74,6 @@ class MainActivity : AppCompatActivity() {
             permissionsManager = PermissionsManager(this.permissionsListener)
             permissionsManager.requestLocationPermissions(this)
         }
-
         val bottomNavigationView: BottomNavigationView = findViewById(R.id.bottomNavigationView)
         bottomNavigationView.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
@@ -89,10 +89,23 @@ class MainActivity : AppCompatActivity() {
                     }
                     true // Retorna true aquí para indicar que el ítem fue seleccionado
                 }
+                R.id.HistorialReportes ->{
+                    val intent = Intent(this, FavActivity::class.java).apply {
+                        // Pasamos el correo del usuario como extra
+                        putExtra("userEmail", currentUserEmail)
+                    }
+                     startActivity(intent)
+
+                    true // Retorna true aquí para indicar que el ítem fue seleccionado
+                }
+
+
                 else -> false
             }
-
         }
+
+
+
 
         // Create a map programmatically and set the initial camera
 
