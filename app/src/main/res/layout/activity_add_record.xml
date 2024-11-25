@@ -58,12 +58,6 @@
             android:text="Tomar foto" />
 
         <Button
-            android:id="@+id/btn_audio"
-            android:layout_width="199dp"
-            android:layout_height="wrap_content"
-            android:text="Grabar audio" />
-
-        <Button
             android:id="@+id/edit_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
