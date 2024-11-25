@@ -25,9 +25,12 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class AuthActivity extends AppCompatActivity {
@@ -38,6 +41,7 @@ public class AuthActivity extends AppCompatActivity {
     private FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
     private static final int RC_SIGN_IN = 9001;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
 
     // ...
 
@@ -96,9 +100,32 @@ public class AuthActivity extends AppCompatActivity {
 
         mAuth.signInWithCredential(credential)
                 .addOnCompleteListener(this, task -> {
+
                     if (task.isSuccessful()) {
                         Log.d("GoogleSignIn", "signInWithCredential:success");
                         FirebaseUser user = mAuth.getCurrentUser();
+                        db.collection("roles").document(user.getUid()).get()
+                                .addOnSuccessListener(document -> {
+                                    if (!document.exists()) {
+                                        // Si no existe, registrar el rol predeterminado
+                                        Map<String, Object> userRole = new HashMap<>();
+                                        userRole.put("rol", "usuario");
+
+                                        db.collection("roles").document(user.getUid())
+                                                .set(userRole)
+                                                .addOnSuccessListener(aVoid -> {
+                                                    Log.d("Auth", "Nuevo usuario registrado con rol 'usuario'.");
+                                                })
+                                                .addOnFailureListener(e -> {
+                                                    Log.e("Auth", "Error al registrar rol: " + e.getMessage());
+                                                });
+                                    } else {
+                                        Log.d("Auth", "El usuario ya existe con rol: " + document.getString("rol"));
+                                    }
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Auth", "Error al verificar usuario: " + e.getMessage());
+                                });
                         // Aquí puedes actualizar la UI con los datos del usuario
                         updateUI(user);
                     } else {

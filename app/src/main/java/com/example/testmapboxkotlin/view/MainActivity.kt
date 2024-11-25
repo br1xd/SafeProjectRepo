@@ -42,6 +42,7 @@ class MainActivity : AppCompatActivity() {
     private val reportVwModel : ReporteViewModel by viewModels()
     lateinit var permissionsManager: PermissionsManager
     private lateinit var currentUserEmail: String
+    private lateinit var currentUserUid :String
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
         if (currentUser != null) {
             Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
             currentUserEmail = currentUser.email ?: ""  // Guardamos el correo del usuario logueado
+            currentUserUid = currentUser.getUid();
         } else {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
         }
@@ -200,90 +202,136 @@ class MainActivity : AppCompatActivity() {
     private fun showInfoWindow(report: Reportes) {
         // Inflar el diseño del diálogo personalizado
         val view = layoutInflater.inflate(R.layout.reportvw_layout, null)
+        val firestore = FirebaseFirestore.getInstance()
+        val ReportCollection = firestore.collection("report-collection")
 
         // Referencias a los elementos del diseño
         val imageView = view.findViewById<ImageView>(R.id.dialog_image)
         val titleView = view.findViewById<TextView>(R.id.dialog_title)
         val authorView = view.findViewById<TextView>(R.id.dialog_author)
         val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
-        val btnAddFav = view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
+        val btnAddFav =
+            view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
         val descView = view.findViewById<TextView>(R.id.tv_desc)
 
-        if (currentUserEmail == report.autor){
-            val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
-            val btnEditReport = view.findViewById<ImageButton>(R.id.btn_edit)
-            btnDeleteReport.visibility = View.VISIBLE
-            btnEditReport.visibility = View.VISIBLE
-            btnEditReport.setOnClickListener{
-                val intent = Intent(this, EditReportActivity::class.java).apply {
-                    // Pasamos el correo del usuario como extra
-                    putExtra("reporteId", report.id)
+        if (currentUserUid != null) {
+            FirebaseFirestore.getInstance().collection("roles").document(currentUserUid).get()
+                .addOnSuccessListener { document ->
+                    if (document.exists()) {
+                        val rol = document.getString("rol") ?: "usuario" // Valor predeterminado si no se encuentra el rol
+                        val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
+                        val btnEditReport = view.findViewById<ImageButton>(R.id.btn_edit)
+
+                        // Administrador: siempre puede editar y borrar
+                        if (rol == "administrador") {
+                            btnDeleteReport.visibility = View.VISIBLE
+                            btnEditReport.visibility = View.VISIBLE
+
+                            btnEditReport.setOnClickListener {
+                                val intent = Intent(this, EditReportActivity::class.java).apply {
+                                    putExtra("reporteId", report.id)
+                                }
+                                startActivity(intent)
+                            }
+
+                            btnDeleteReport.setOnClickListener {
+                                reportVwModel.deleteReport(report.id)
+                            }
+                        }
+                        // Usuario: solo puede editar y borrar sus propios reportes
+                        else if (currentUserEmail == report.autor) {
+                            btnDeleteReport.visibility = View.VISIBLE
+                            btnEditReport.visibility = View.VISIBLE
+
+                            btnEditReport.setOnClickListener {
+                                val intent = Intent(this, EditReportActivity::class.java).apply {
+                                    putExtra("reporteId", report.id)
+                                }
+                                startActivity(intent)
+                            }
+
+                            btnDeleteReport.setOnClickListener {
+                                reportVwModel.deleteReport(report.id)
+                            }
+                        }
+                        // Si el usuario no es administrador ni autor del reporte, no hace nada
+                        else {
+                            Log.d("Debug", "El usuario no tiene permisos para editar o borrar este reporte.")
+                        }
+                    } else {
+                        Log.e("Firestore", "No se encontró un rol para el usuario actual.")
+                    }
                 }
-                startActivity(intent)
-            }
-            btnDeleteReport.setOnClickListener{
-                reportVwModel.deleteReport(report.id)
-            }
-        }
-
-        // Glide es una libreria que carga imagenes de url
-        Log.d("TAG IMAGEN",report.image_url)
-        Glide.with(this)
-            .load(report.image_url) // URL de la imagen
-            .placeholder(R.drawable.ic_launcher_background) // Imagen por defecto
-            .error(R.drawable.ic_launcher_background) // Imagen de error
-            .into(imageView)
-
-        // Configurar texto
-        titleView.text = "Tipo: ${report.tipo}"
-        authorView.text = "Autor: ${report.autor}"
-        descView.text = "Descripción: ${report.desc}"
-        val firestore = FirebaseFirestore.getInstance()
-        val ReportCollection = firestore.collection("report-collection")
-        btnRpt.setOnClickListener({
-            Toast.makeText(this,"Ha sido reportado",Toast.LENGTH_SHORT).show()
-            ReportCollection.document(report.id).update("denunciado",true) //Solucion temporal, se debe agregar a otra coleccion y borrar de esta.
-        })
-        btnAddFav.setOnClickListener {
-            if (currentUserEmail.isNotEmpty()) {
-                val favoritesCollection = firestore.collection("users")
-                    .document(currentUserEmail)  // Usamos el correo del usuario como identificador
-                    .collection("favorites")
-
-                favoritesCollection.document(report.id).set(report).addOnSuccessListener {
-                    Toast.makeText(this, "Agregado a favoritos", Toast.LENGTH_SHORT).show()
-                }.addOnFailureListener {
-                    Toast.makeText(this, "Error al agregar a favoritos", Toast.LENGTH_SHORT).show()
+                .addOnFailureListener { e ->
+                    Log.e("FirestoreError", "Error al obtener el rol: ${e.message}")
                 }
-            } else {
-                Toast.makeText(this, "Por favor, inicia sesión para agregar a favoritos", Toast.LENGTH_SHORT).show()
+        }
+            // Glide es una libreria que carga imagenes de url
+            Log.d("TAG IMAGEN", report.image_url)
+            Glide.with(this)
+                .load(report.image_url) // URL de la imagen
+                .placeholder(R.drawable.ic_launcher_background) // Imagen por defecto
+                .error(R.drawable.ic_launcher_background) // Imagen de error
+                .into(imageView)
+
+            // Configurar texto
+            titleView.text = "Tipo: ${report.tipo}"
+            authorView.text = "Autor: ${report.autor}"
+            descView.text = "Descripción: ${report.desc}"
+
+            btnRpt.setOnClickListener({
+                Toast.makeText(this, "Ha sido reportado", Toast.LENGTH_SHORT).show()
+                ReportCollection.document(report.id).update(
+                    "denunciado",
+                    true
+                ) //Solucion temporal, se debe agregar a otra coleccion y borrar de esta.
+            })
+            btnAddFav.setOnClickListener {
+                if (currentUserEmail.isNotEmpty()) {
+                    val favoritesCollection = firestore.collection("users")
+                        .document(currentUserEmail)  // Usamos el correo del usuario como identificador
+                        .collection("favorites")
+
+                    favoritesCollection.document(report.id).set(report).addOnSuccessListener {
+                        Toast.makeText(this, "Agregado a favoritos", Toast.LENGTH_SHORT).show()
+                    }.addOnFailureListener {
+                        Toast.makeText(this, "Error al agregar a favoritos", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                } else {
+                    Toast.makeText(
+                        this,
+                        "Por favor, inicia sesión para agregar a favoritos",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            // Crear y mostrar el diálogo
+            AlertDialog.Builder(this).apply {
+                setView(view) // Establecer la vista personalizada
+                setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+                show()
+            }
+
+        }
+
+        var permissionsListener: PermissionsListener = object : PermissionsListener {
+            override fun onExplanationNeeded(permissionsToExplain: List<String>) {
+
+            }
+
+            override fun onPermissionResult(granted: Boolean) {
+                if (granted) {
+                    println("a")
+                    // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
+
+                } else {
+                    println("a")
+                    // User denied the permission
+
+                }
             }
         }
-
-        // Crear y mostrar el diálogo
-        AlertDialog.Builder(this).apply {
-            setView(view) // Establecer la vista personalizada
-            setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-            show()
-        }
-
-    }
-    var permissionsListener: PermissionsListener = object : PermissionsListener {
-        override fun onExplanationNeeded(permissionsToExplain: List<String>) {
-
-        }
-
-        override fun onPermissionResult(granted: Boolean) {
-            if (granted) {
-                println("a")
-                // Permission sensitive logic called here, such as activating the Maps SDK's LocationComponent to show the device's location
-
-            } else {
-                println("a")
-                // User denied the permission
-
-            }
-        }
-    }
 
 }
