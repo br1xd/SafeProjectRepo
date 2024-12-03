@@ -2,6 +2,7 @@ package com.example.testmapboxkotlin.view
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -13,11 +14,15 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.ResourceManagerInternal.get
+import androidx.compose.material3.DividerDefaults.color
 import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
+import com.example.testmapboxkotlin.model.Comunas
 import com.example.testmapboxkotlin.model.Reportes
+import com.example.testmapboxkotlin.viewModel.ComunaViewModel
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
@@ -28,6 +33,15 @@ import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.Point
 import com.mapbox.maps.CameraOptions
 import com.mapbox.maps.MapView
+import com.mapbox.maps.extension.style.expressions.dsl.generated.literal
+import com.mapbox.maps.extension.style.expressions.generated.Expression
+import com.mapbox.maps.extension.style.expressions.generated.Expression.Companion.match
+import com.mapbox.maps.extension.style.layers.addLayer
+import com.mapbox.maps.extension.style.layers.generated.fillLayer
+import com.mapbox.maps.extension.style.layers.generated.lineLayer
+import com.mapbox.maps.extension.style.layers.getLayer
+import com.mapbox.maps.extension.style.sources.addSource
+import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
@@ -37,12 +51,14 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.viewport
 
 class MainActivity : AppCompatActivity() {
+
     private lateinit var locationManager: LocationManager
     private lateinit var mapView: MapView
     private val reportVwModel : ReporteViewModel by viewModels()
     lateinit var permissionsManager: PermissionsManager
     private lateinit var currentUserEmail: String
     private lateinit var currentUserUid :String
+    private val comunaVwm : ComunaViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -56,10 +72,8 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
         }
 
-
-
-
         mapView = findViewById(R.id.mapView)
+
         addReporteMarker()
         reportVwModel.getAllReport()
         //Uso de el manager de locacion
@@ -67,7 +81,6 @@ class MainActivity : AppCompatActivity() {
         // Obtener view del mapa
 
         //val reporteViewModel = ViewModelProvider(this).get(ReporteViewModel::class.java)
-
 
 
         //Marcadores
@@ -109,8 +122,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        val btnChangeMap = findViewById<ImageButton>(R.id.btn_changeMap)
+        var OriginalMap = true
+        btnChangeMap.setOnClickListener({
+            Log.d("O1",""+OriginalMap)
+            if (OriginalMap == true){
+                comunaVwm.getAllReport()
+                cargarComunas(OriginalMap)
+                OriginalMap = false
+                Log.d("O2",""+OriginalMap)
+            }
+            else {
+                Log.d("O3",""+OriginalMap)
+                cargarComunas(originalMap = false)
+                OriginalMap = true
+            }
 
-
+        })
 
         // Create a map programmatically and set the initial camera
 
@@ -138,7 +166,86 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+    private fun cargarComunas(originalMap: Boolean) {
+        val inputStream = resources.openRawResource(R.raw.comunas_santiago)
+        val geoJsonString = inputStream.bufferedReader().use { it.readText() } // Leer contenido del archivo
+        inputStream.close() //Busac el archivo y lo carga
 
+
+        val geoJsonSource = GeoJsonSource.Builder("comunas-source")
+            .data(geoJsonString)
+            .build()
+
+        if (originalMap==true){
+            mapView.mapboxMap.getStyle { style ->
+                style.addSource(geoJsonSource)
+
+                comunaVwm.getListaComunas().observe(this){lista ->
+                    if (lista != null){
+                        style.removeStyleLayer("comunas-layer")
+                        style.removeStyleLayer("comunas-limits-layer")
+                        val MappingColores = mutableListOf<Expression>()
+                        for (c : Comunas in lista){
+                            var colorTasa = "#CCCCCC"
+                            if (c.tasaCrimen in 1..5257) {
+                                colorTasa = "#FFA07A"
+                            }
+                            else if (c.tasaCrimen in 5258..7887){
+                                colorTasa = "#FA8072"
+                            }
+
+                            else if (c.tasaCrimen in 7888..10515){
+                                colorTasa = "#F08080"
+                            }
+                            else if (c.tasaCrimen in 10516..13145){
+                                colorTasa = "#800000"
+                            }
+                            Log.d("ComunaMap",c.idComuna)
+                            Log.d("ComunaMap",colorTasa)
+                            MappingColores.add(literal(c.idComuna))
+                            MappingColores.add(literal(colorTasa))
+                        }
+
+                        if (style.getLayer("comunas-layer") == null){
+                            style.addLayer(
+                                fillLayer("comunas-layer", "comunas-source") {
+                                    fillColor(
+                                        match(
+                                            com.mapbox.maps.extension.style.expressions.dsl.generated.get("name"), // El atributo del GeoJSON con el que comparas
+                                            // Color predeterminado si no hay coincidencias
+                                            *MappingColores.toTypedArray(),
+                                            literal("#CCCCCC")
+
+                                        )
+                                    )
+                                    fillOpacity(0.7) // Opcional: ajusta la transparencia
+                                }
+                            )
+                            style.addLayer(
+                                lineLayer("comunas-limits-layer", "comunas-source") {
+                                    lineColor(literal("#000000")) // Color de las líneas (negro en este caso)
+                                    lineWidth(2.1) // Ancho de las líneas
+                                    lineOpacity(1.0) // Opacidad de las líneas (puedes ajustarlo)
+                                }
+                            )
+                        }
+
+                    }
+
+                }
+
+
+            }
+        }
+        else{
+            mapView.mapboxMap.getStyle { style ->
+                style.removeStyleLayer("comunas-layer")
+                style.removeStyleLayer("comunas-limits-layer")
+                style.removeStyleSource("comunas-source")
+            }
+
+            }
+        }
 
     private fun addReporteMarker(){
         val annotationApi = mapView.annotations

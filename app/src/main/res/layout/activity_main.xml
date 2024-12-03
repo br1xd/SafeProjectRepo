@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 xmlns:app="http://schemas.android.com/apk/res-auto"
-android:orientation="vertical"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
 android:layout_width="match_parent"
 android:layout_height="match_parent">
 
 <!-- MapView ocupa una parte de la pantalla -->
-<com.mapbox.maps.MapView
+
+    <com.mapbox.maps.MapView
     android:id="@+id/mapView"
     android:layout_width="match_parent"
     android:layout_height="0dp"
@@ -17,10 +19,24 @@ android:layout_height="match_parent">
     app:mapbox_cameraTargetLng="-98.0"
     app:mapbox_cameraZoom="2.0"
     app:mapbox_locationComponentEnabled="true"
-    app:mapbox_locationComponentPuckBearing="heading" />
+    app:mapbox_locationComponentPuckBearing="heading" >
+
+        <ImageButton
+            android:id="@+id/btn_changeMap"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="right"
+            android:layout_marginTop="10dp"
+            android:layout_marginRight="5dp"
+            android:background="@drawable/button_round"
+            app:srcCompat="@android:drawable/ic_menu_mapmode"
+            tools:ignore="SpeakableTextPresentCheck" />
+
+    </com.mapbox.maps.MapView>
 
 <!-- Barra de navegación inferior -->
-<com.google.android.material.bottomnavigation.BottomNavigationView
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
     android:id="@+id/bottomNavigationView"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"

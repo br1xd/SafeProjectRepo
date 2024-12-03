@@ -43,7 +43,8 @@
             android:hint="Descripción..."
             android:inputType="text"
             android:minHeight="48dp"
-            android:shadowColor="#0F0E0E" />
+            android:shadowColor="#0F0E0E"
+            android:textColor="#FFFFFF" />
 
         <Button
             android:id="@+id/edit_btn"
