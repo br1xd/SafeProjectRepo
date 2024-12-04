@@ -65,7 +65,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
             Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
@@ -80,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         mapView = findViewById(R.id.mapView)
-
+        showPremiumFunctions()
         addReporteMarker()
         reportVwModel.getAllReport()
         //Uso de el manager de locacion
@@ -324,6 +323,23 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+
+    }
+    private fun showPremiumFunctions(){
+        FirebaseFirestore.getInstance().collection("roles").document(currentUserUid).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val rol = document.getString("rol") ?: "usuario" // Valor predeterminado si no se encuentra el rol
+                    val btnChangeMap = findViewById<ImageButton>(R.id.btn_changeMap)
+
+                    // Administrador: siempre puede editar y borrar
+                    if (rol == "Premium") {
+                        btnChangeMap.visibility = View.VISIBLE
+
+                    }
+
+                }
+            }
 
     }
     private fun showInfoWindow(report: Reportes) {
