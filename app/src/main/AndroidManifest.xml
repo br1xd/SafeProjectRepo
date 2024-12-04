@@ -30,7 +30,9 @@
         <activity
             android:name=".view.FavActivity"
             android:exported="false" />
-
+        <activity
+            android:name=".view.ProfileActivity"
+            android:exported="true" />
 
         <provider
             android:name="androidx.core.content.FileProvider"

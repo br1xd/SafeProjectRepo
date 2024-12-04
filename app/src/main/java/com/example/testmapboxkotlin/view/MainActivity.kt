@@ -3,6 +3,7 @@ import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -58,6 +59,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var permissionsManager: PermissionsManager
     private lateinit var currentUserEmail: String
     private lateinit var currentUserUid :String
+    private lateinit var currentUserName : String
+    private var currentUserImage : Uri? = null
     private val comunaVwm : ComunaViewModel by viewModels()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +71,10 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
             currentUserEmail = currentUser.email ?: ""  // Guardamos el correo del usuario logueado
             currentUserUid = currentUser.getUid();
+            currentUserName = currentUser.displayName ?: "";
+            currentUserImage = currentUser.photoUrl;
+            Log.d("imageUri",currentUserImage.toString())
+
         } else {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
         }
@@ -115,6 +122,19 @@ class MainActivity : AppCompatActivity() {
                      startActivity(intent)
 
                     true // Retorna true aquí para indicar que el ítem fue seleccionado
+                }
+                R.id.Profile_btn->{
+                    val intent = Intent(this, ProfileActivity::class.java).apply {
+                        // Pasamos el correo del usuario como extra
+                        putExtra("USER_NAME", currentUserName)
+                        putExtra("USER_EMAIL", currentUserEmail)
+                        putExtra("USER_UID", currentUserUid)
+                        putExtra("USER_IMAGE_URI", currentUserImage.toString())
+
+                    }
+                    startActivity(intent)
+                    overridePendingTransition(R.anim.slide_in, R.anim.slide_out)
+                    true
                 }
 
 

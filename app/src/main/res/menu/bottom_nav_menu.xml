@@ -9,7 +9,7 @@
         android:icon="@android:drawable/ic_popup_reminder"
         android:title="historial" />
     <item
-        android:id="@+id/ej2"
+        android:id="@+id/Profile_btn"
         android:icon="@android:drawable/ic_dialog_info"
-        android:title="ej2" />
+        android:title="perfil" />
 </menu>
