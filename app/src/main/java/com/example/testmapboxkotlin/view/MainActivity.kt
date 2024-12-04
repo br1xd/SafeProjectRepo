@@ -67,12 +67,11 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser != null) {
-            Toast.makeText(this, "Inicio de sesión correcto", Toast.LENGTH_SHORT).show()
+
             currentUserEmail = currentUser.email ?: ""  // Guardamos el correo del usuario logueado
             currentUserUid = currentUser.getUid();
             currentUserName = currentUser.displayName ?: "";
             currentUserImage = currentUser.photoUrl;
-            Log.d("imageUri",currentUserImage.toString())
 
         } else {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
@@ -325,7 +324,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-    private fun showPremiumFunctions(){
+    private fun showPremiumFunctions(){  //Revisa el rol del usuario, y en el caso de tener premium, muestra funciones especiales.
         FirebaseFirestore.getInstance().collection("roles").document(currentUserUid).get()
             .addOnSuccessListener { document ->
                 if (document.exists()) {

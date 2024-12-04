@@ -26,14 +26,18 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference UserCollection = firestore.collection("roles");
+    private final CollectionReference VentasCollection = firestore.collection("registro-ventas");
+    private final CollectionReference TotalVentasCollection = firestore.collection("ventas-totales");
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
 
@@ -63,12 +67,18 @@ public class ProfileActivity extends AppCompatActivity {
                         if (documentSnapshot.exists()) {
                             String rol_user = documentSnapshot.getString("rol");
                             Log.d("rol",rol_user);
-                            if ( rol_user.equals("Premium") ){
+                            if ( rol_user.equals("Premium")){
                                 premium_btn.setText("Comprado");
                                 premium_btn.setAlpha(0.98f);
                                 premium_btn.setEnabled(false);
 
                             }
+                            else if (rol_user.equals("Basico")){
+                                basico_btn.setText("Comprado");
+                                basico_btn.setAlpha(0.98f);
+                                basico_btn.setEnabled(false);
+                            }
+
                         }
                     }
                 })
@@ -82,8 +92,17 @@ public class ProfileActivity extends AppCompatActivity {
 
         premium_btn.setOnClickListener(view->{
             VentanaCompraExitosa();
+            Date fecha = new Date();
             Map<String, Object> userRole = new HashMap<>();
             userRole.put("rol","Premium");
+
+            Map<String, Object> VentaReg = new HashMap<>();
+            VentaReg.put("fecha-compra", fecha);
+            VentaReg.put("precio",7990);
+            Double precio = Double.parseDouble(VentaReg.get("precio").toString());
+            TotalVentasCollection.document("Ingresos").update("ingresos-premium",FieldValue.increment(precio));
+
+            VentasCollection.document().set(VentaReg);
             UserCollection.document(userUid).set(userRole);
             premium_btn.setText("Comprado");
             premium_btn.setAlpha(0.98f);
@@ -94,6 +113,16 @@ public class ProfileActivity extends AppCompatActivity {
             VentanaCompraExitosa();
             Map<String, Object> userRole = new HashMap<>();
             userRole.put("rol","Basico");
+
+            Date fecha = new Date();
+            Map<String, Object> VentaReg = new HashMap<>();
+            VentaReg.put("fecha-compra", fecha);
+            VentaReg.put("precio",7990);
+
+            Double precio = Double.parseDouble(VentaReg.get("precio").toString());
+            TotalVentasCollection.document("Ingresos").update("ingresos-basicos",FieldValue.increment(precio));
+
+            VentasCollection.document().set(VentaReg);
             UserCollection.document(userUid).set(userRole);
             basico_btn.setText("Comprado");
             basico_btn.setAlpha(0.98f);
