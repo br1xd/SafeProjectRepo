@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.view.View;
@@ -133,16 +134,12 @@ public class AddReportActivity extends AppCompatActivity {
             ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida,descString);
             Toast.makeText(this, "Agregando reporte, espere un momento...", Toast.LENGTH_SHORT).show();
 
-            try {
-                // Hacer una pausa de 2 segundos
-                Thread.sleep(3000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            new Handler().postDelayed(() -> {
+                Intent i = new Intent(AddReportActivity.this, MainActivity.class);
+                startActivity(i);
+                finish();
+            }, 3000);
 
-            Intent i = new Intent(AddReportActivity.this, MainActivity.class);
-            startActivity(i);
-            finish();
 
         });
         back_btn.setOnClickListener(view -> {
