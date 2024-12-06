@@ -7,96 +7,162 @@
     android:background="#2E2B2B"
     android:backgroundTint="#352F2F">
 
-    <LinearLayout
+    <TextView
+        android:id="@+id/textView5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="120dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="8dp"
-        android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Creación de reportes"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textColor="#F0F0F0"
+        android:textSize="34sp"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/textView6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="Recuerda respetar las normas de publicación."
+        android:textColor="#FFFFFF"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView5" />
+
+    <LinearLayout
+        android:id="@+id/linearLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="8dp"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@+id/edit_btn"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Introduzca el tipo de reporte"
-            android:textColor="#FDFBFB"
-            android:textColorHighlight="#000000" />
-
-        <Spinner
-            android:id="@+id/spinnerCategorias2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:minHeight="48dp" />
-
-        <Spinner
-            android:id="@+id/spinnerTiempoVida"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:minHeight="48dp" />
-
-        <EditText
-            android:id="@+id/Tv_desc"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="10"
-            android:hint="Descripción..."
-            android:inputType="text"
-            android:minHeight="48dp"
-            android:textColor="#FFFFFF" />
-
-        <Button
-            android:id="@+id/btnSelectImage"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tomar foto" />
-
-        <Button
-            android:id="@+id/edit_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="#B10909"
-            android:text="Reportar"
-            android:textColor="#FAFAFA"
-            android:textColorHighlight="#FDFCFC"
-            app:icon="@android:drawable/stat_sys_warning"
-            app:iconTint="#FDFDFD" />
-
-        <ImageView
-            android:id="@+id/imageView"
-            android:layout_width="200dp"
-            android:layout_height="200dp"
-            android:layout_marginTop="16dp"
-            android:contentDescription="Vista previa de imagen"
-            android:scaleType="centerCrop" />
-
         <LinearLayout
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="bottom|right"
-            android:orientation="horizontal">
+            android:layout_marginLeft="20px"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="173dp"
+                android:layout_height="188dp"
+                android:layout_marginTop="128dp"
+                android:contentDescription="Vista previa de imagen"
+                android:scaleType="centerCrop"
+                app:srcCompat="@drawable/placeholder_add_record" />
 
             <Button
-                android:id="@+id/back_btn"
+                android:id="@+id/btnSelectImage"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tomar foto" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="120dp"
+            android:layout_marginEnd="24dp"
+            android:layout_marginBottom="8dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:backgroundTint="#E91E63"
-                android:text="Volver"
-                android:textColor="#FAFAFA"
-                android:textColorHighlight="#FDFCFC"
-                app:icon="@android:drawable/ic_menu_revert"
-                app:iconSize="20dp"
-                app:iconTint="#FAFAFA" />
+                android:text="Introduzca el tipo de reporte"
+                android:textColor="#FDFBFB"
+                android:textColorHighlight="#000000" />
+
+            <Spinner
+                android:id="@+id/spinnerCategorias2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="#FFFFFF"
+                android:minHeight="48dp" />
+
+            <Spinner
+                android:id="@+id/spinnerTiempoVida"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="#FFFFFF"
+                android:backgroundTint="#FFFFFF"
+                android:minHeight="48dp" />
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Descripción"
+                app:boxBackgroundColor="@android:color/white"
+                app:boxCornerRadiusBottomEnd="12dp"
+                app:boxCornerRadiusBottomStart="12dp"
+                app:boxCornerRadiusTopEnd="12dp"
+                app:boxCornerRadiusTopStart="12dp"
+                app:boxStrokeColor="@color/black"
+                app:boxStrokeWidth="5px"
+                app:endIconMode="clear_text"
+                app:endIconTint="@color/black"
+                app:helperText="Ingresa una descripción"
+                app:helperTextEnabled="true"
+                app:hintAnimationEnabled="true">
+
+                <EditText
+                    android:id="@+id/Tv_desc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="@color/white"
+                    android:paddingLeft="16dp"
+                    android:paddingRight="16dp"
+                    android:textColor="#000000"
+                    android:textSize="16sp" />
+            </com.google.android.material.textfield.TextInputLayout>
+
         </LinearLayout>
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/back_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="11dp"
+        android:layout_marginTop="8dp"
+        android:layout_weight="1"
+        android:backgroundTint="#E91E63"
+        android:text="Volver"
+        android:textColor="#FAFAFA"
+        android:textColorHighlight="#FDFCFC"
+        app:icon="@android:drawable/ic_menu_revert"
+        app:iconSize="20dp"
+        app:iconTint="#FAFAFA"
+        app:layout_constraintEnd_toStartOf="@+id/linearLayout"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
+    <Button
+        android:id="@+id/edit_btn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="64dp"
+        android:backgroundTint="#B10909"
+        android:text="Reportar"
+        android:textColor="#FAFAFA"
+        android:textColorHighlight="#FDFCFC"
+        app:icon="@android:drawable/stat_sys_warning"
+        app:iconTint="#FDFDFD"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

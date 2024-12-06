@@ -8,4 +8,5 @@
     <string name="imagen_del_reporte">Imagen del reporte</string>
     <string name="tipo">Tipo</string>
     <string name="title_activity_comunas_manager">ComunasManager</string>
+
 </resources>
