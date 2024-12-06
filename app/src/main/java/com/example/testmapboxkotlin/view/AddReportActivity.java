@@ -123,7 +123,6 @@ public class AddReportActivity extends AppCompatActivity {
 
         submit_btn.setOnClickListener(view -> {
 
-            //String tipo= tipoTv.getText().toString();
             Date fecha = new Date();
             String horasVidaString = minutoSeleccionado.toString();
             String descString = descTv.getText().toString();

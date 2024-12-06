@@ -23,12 +23,15 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -57,9 +60,10 @@ public class ProfileActivity extends AppCompatActivity {
         Button signout_btn = findViewById(R.id.btn_signout);
         Button basico_btn = findViewById(R.id.btn_buyBasic);
         Button premium_btn = findViewById(R.id.btn_buyPremium);
+        Timestamp fecha = new Timestamp(Instant.now());
+        Timestamp fecha_exp = new Timestamp(Instant.now().plus(30, ChronoUnit.DAYS));
 
-
-        //Roles hechos, falta implementar un registro de la compra con fecha y una funcion TTL
+        //Roles hechos, falta implementar un registro de la compra con fecha y una función TTL
          UserCollection.document(userUid).get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -92,17 +96,19 @@ public class ProfileActivity extends AppCompatActivity {
 
         premium_btn.setOnClickListener(view->{
             VentanaCompraExitosa();
-            Date fecha = new Date();
             Map<String, Object> userRole = new HashMap<>();
             userRole.put("rol","Premium");
+            userRole.put("fecha_exp", fecha_exp);
 
             Map<String, Object> VentaReg = new HashMap<>();
-            VentaReg.put("fecha-compra", fecha);
+            VentaReg.put("comprador",userUid);
+            VentaReg.put("fecha_compra", fecha);
+            VentaReg.put("fecha_exp", fecha_exp);
+
             VentaReg.put("precio",7990);
             Double precio = Double.parseDouble(VentaReg.get("precio").toString());
-            TotalVentasCollection.document("Ingresos").update("ingresos-premium",FieldValue.increment(precio));
-
             VentasCollection.document().set(VentaReg);
+            TotalVentasCollection.document("Ingresos").update("ingresos-premium",FieldValue.increment(precio));
             UserCollection.document(userUid).set(userRole);
             premium_btn.setText("Comprado");
             premium_btn.setAlpha(0.98f);
@@ -113,11 +119,13 @@ public class ProfileActivity extends AppCompatActivity {
             VentanaCompraExitosa();
             Map<String, Object> userRole = new HashMap<>();
             userRole.put("rol","Basico");
+            userRole.put("fecha_exp", fecha_exp);
 
-            Date fecha = new Date();
             Map<String, Object> VentaReg = new HashMap<>();
-            VentaReg.put("fecha-compra", fecha);
-            VentaReg.put("precio",7990);
+            VentaReg.put("comprador",userUid);
+            VentaReg.put("fecha_compra", fecha);
+            VentaReg.put("fecha_exp", fecha_exp);
+            VentaReg.put("precio",4990);
 
             Double precio = Double.parseDouble(VentaReg.get("precio").toString());
             TotalVentasCollection.document("Ingresos").update("ingresos-basicos",FieldValue.increment(precio));

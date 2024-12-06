@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TestMapboxKotlin</string>
+    <string name="app_name">SafeProject</string>
     <string name="title_activity_add_report">AddReport</string>
     <string name="hello_world">hello world</string>
     <string name="default_web_client_id">666765196565-2imeev4f73drj5fd9o17t7ov3f9uk7ql.apps.googleusercontent.com</string>
