@@ -131,7 +131,18 @@ public class AddReportActivity extends AppCompatActivity {
                 horasVida = Long.parseLong(horasVidaString);
             }
             ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida,descString);
-            Toast.makeText(this,"Agregando reporte, espere un momento...",Toast.LENGTH_SHORT);
+            Toast.makeText(this, "Agregando reporte, espere un momento...", Toast.LENGTH_SHORT).show();
+
+            try {
+                // Hacer una pausa de 2 segundos
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            Intent i = new Intent(AddReportActivity.this, MainActivity.class);
+            startActivity(i);
+            finish();
 
         });
         back_btn.setOnClickListener(view -> {
