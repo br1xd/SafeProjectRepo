@@ -8,5 +8,6 @@
     <string name="imagen_del_reporte">Imagen del reporte</string>
     <string name="tipo">Tipo</string>
     <string name="title_activity_comunas_manager">ComunasManager</string>
+    <string name="AD_UNIT_ID">ca-app-pub-4520524021917680/4016226112</string>
 
 </resources>

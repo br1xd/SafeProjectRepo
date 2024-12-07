@@ -1,10 +1,12 @@
 package com.example.testmapboxkotlin.viewModel;
+import android.app.Activity;
 import android.net.Uri;
 import android.util.Log;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.example.testmapboxkotlin.model.Reportes;
+import com.example.testmapboxkotlin.view.MainActivity;
 import com.google.firebase.database.annotations.Nullable;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.CollectionReference;
@@ -33,6 +35,11 @@ public class ReporteViewModel extends ViewModel {
 
     private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<Reportes>> listaFavoritosLiveData = new MutableLiveData<>();
+    private MutableLiveData<Boolean> deleteReportSuccess = new MutableLiveData<>();
+
+    public LiveData<Boolean> getDeleteReportSuccess() {
+        return deleteReportSuccess;
+    }
     private final FirebaseStorage storage = FirebaseStorage.getInstance(); // Instancia de Firebase Storage
 
     public LiveData<List<Reportes>> getListaFavoritos() {return listaFavoritosLiveData;
@@ -63,13 +70,22 @@ public class ReporteViewModel extends ViewModel {
         }
     }
 
-    public void deleteReport(String reportId){
+    public void deleteReport(String reportId) {
+        List<Reportes> currentList = listaReportesLiveData.getValue();
+        if (currentList != null) {
+            currentList.removeIf(report -> report.getId().equals(reportId));
+            listaReportesLiveData.setValue(currentList); // Notificar a la UI con la nueva lista
+        }
+        ReportCollection.document(reportId).delete()
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("Firestore", "Reporte eliminado con éxito");
+                    deleteReportSuccess.setValue(true);
 
-                ReportCollection.
-                        document(reportId)
-                        .delete();
 
-
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Error al eliminar el reporte", e);
+                });
     }
     public void addReport(String Tipo, Date fecha,String autor, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida,String desc) {
         String reportId = ""+Math.random()*10;

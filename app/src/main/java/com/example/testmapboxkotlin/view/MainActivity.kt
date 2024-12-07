@@ -7,6 +7,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -45,6 +46,7 @@ import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
@@ -107,6 +109,7 @@ class MainActivity : AppCompatActivity() {
                             putExtra("long", longitude) //Le pasamos a la siguiente actividad la longitud
                             putExtra("lat", latitude)   // y latitud
                             putExtra("userEmail", currentUserEmail)
+                            putExtra("userUid",currentUserUid)
                         }
                         startActivity(intent)
                     }
@@ -266,6 +269,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun addReporteMarker(){
+        Log.d("mark","ejecutando")
         val annotationApi = mapView.annotations
         val pointAnnotationManager = annotationApi.createPointAnnotationManager()
         val markers = mutableMapOf<String, Reportes>()
@@ -347,6 +351,12 @@ class MainActivity : AppCompatActivity() {
         val firestore = FirebaseFirestore.getInstance()
         val ReportCollection = firestore.collection("report-collection")
 
+        // Crear y mostrar el diálogo
+        val currentDialog = AlertDialog.Builder(this)
+            .setView(view)
+            .setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
+            .create() // Usar .create() en lugar de .show()
+        currentDialog.show()
         // Referencias a los elementos del diseño
         val imageView = view.findViewById<ImageView>(R.id.dialog_image)
         val titleView = view.findViewById<TextView>(R.id.dialog_title)
@@ -378,6 +388,7 @@ class MainActivity : AppCompatActivity() {
 
                             btnDeleteReport.setOnClickListener {
                                 reportVwModel.deleteReport(report.id)
+                                currentDialog.dismiss()
                             }
                         }
                         // Usuario: solo puede editar y borrar sus propios reportes
@@ -388,12 +399,15 @@ class MainActivity : AppCompatActivity() {
                             btnEditReport.setOnClickListener {
                                 val intent = Intent(this, EditReportActivity::class.java).apply {
                                     putExtra("reporteId", report.id)
+
                                 }
                                 startActivity(intent)
                             }
 
                             btnDeleteReport.setOnClickListener {
                                 reportVwModel.deleteReport(report.id)
+                                Toast.makeText(this,"Reporte eliminado.",Toast.LENGTH_SHORT)
+                                currentDialog.dismiss()
                             }
                         }
                         // Si el usuario no es administrador ni autor del reporte, no hace nada
@@ -449,12 +463,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            // Crear y mostrar el diálogo
-            AlertDialog.Builder(this).apply {
-                setView(view) // Establecer la vista personalizada
-                setPositiveButton("OK") { dialog, _ -> dialog.dismiss() }
-                show()
-            }
+
 
         }
 

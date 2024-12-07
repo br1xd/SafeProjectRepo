@@ -8,8 +8,10 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowMetrics;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -22,7 +24,18 @@ import androidx.core.content.FileProvider;
 
 import com.example.testmapboxkotlin.R;
 import com.example.testmapboxkotlin.viewModel.ReporteViewModel;
+import com.google.android.gms.ads.AdListener;
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdSize;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.LoadAdError;
+import com.google.android.gms.ads.MobileAds;
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -34,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class AddReportActivity extends AppCompatActivity {
 
@@ -42,16 +56,60 @@ public class AddReportActivity extends AppCompatActivity {
     private ImageView imageView;
     private String tipoSeleccionado;
     private Integer minutoSeleccionado;
-
+    private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private final CollectionReference UserCollection = firestore.collection("roles");
     private FusedLocationProviderClient fusedLocationClient;
 
     ReporteViewModel ViewModelRep = new ReporteViewModel();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        requestPermissions();
-        setContentView(R.layout.activity_add_record);
 
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_add_record);
+        MobileAds.initialize(this, initializationStatus -> {});
+        Bundle bundle = getIntent().getExtras();
+
+        DocumentReference docRef = UserCollection.document(bundle.getString("userUid"));
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+
+                    String rol_usuario = document.getString("rol");
+                    if (rol_usuario.equals("usuario")){
+
+                        AdView adView = findViewById(R.id.adView1);
+
+                        // Configura el listener para depuración
+                        adView.setAdListener(new AdListener() {
+                            @Override
+                            public void onAdLoaded() {
+                                Log.d("AdMob", "Anuncio cargado correctamente");
+                            }
+
+                            @Override
+                            public void onAdFailedToLoad(LoadAdError adError) {
+                                Log.e("AdMob", "Error al cargar anuncio: " + adError.getMessage());
+                            }
+                        });
+
+                        // Carga el anuncio
+                        AdRequest adRequest = new AdRequest.Builder().build();
+                        adView.loadAd(adRequest);
+
+                    }
+                } else {
+                    Log.d("Firestore", "No existe el documento");
+                }
+            } else {
+                Log.e("Firestore", "Error obteniendo el documento", task.getException());
+            }
+        });
+
+
+
+
+        requestPermissions();
         List<Integer> minutos = new ArrayList<>();
         minutos.add(15);
         minutos.add(30);
@@ -116,7 +174,6 @@ public class AddReportActivity extends AppCompatActivity {
 
         btnSelectImage.setOnClickListener(v -> openCamera());
 
-        Bundle bundle = getIntent().getExtras();
         double log = bundle.getDouble("long");
         double lat = bundle.getDouble("lat");
         String autor = bundle.getString("userEmail");
@@ -209,6 +266,21 @@ public class AddReportActivity extends AppCompatActivity {
                 Toast.makeText(this, "Permisos denegados", Toast.LENGTH_SHORT).show();
             }
         }
+    }
+    // Create a new ad view.
+
+    public AdSize getAdSize() {
+        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
+        int adWidthPixels = displayMetrics.widthPixels;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            WindowMetrics windowMetrics = this.getWindowManager().getCurrentWindowMetrics();
+            adWidthPixels = windowMetrics.getBounds().width();
+        }
+
+        float density = displayMetrics.density;
+        int adWidth = (int) (adWidthPixels / density);
+        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
     }
 
 

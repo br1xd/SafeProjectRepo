@@ -49,6 +49,7 @@ android {
 }
 
 dependencies {
+    implementation("com.google.android.gms:play-services-ads:23.6.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     implementation("androidx.activity:activity:1.9.3")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
