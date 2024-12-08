@@ -1,7 +1,10 @@
 package com.example.testmapboxkotlin.view;
+import static android.view.View.VISIBLE;
+
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -19,6 +22,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.widget.ToggleButton;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
 
@@ -50,16 +55,19 @@ import java.util.Locale;
 import java.util.Map;
 
 public class AddReportActivity extends AppCompatActivity {
+    private MediaRecorder mediaRecorder;
+    private File audioFile;
 
     private static final int CAMERA_REQUEST = 1;
     private Uri cameraImageUri;
+    private Uri audioUri;
     private ImageView imageView;
     private String tipoSeleccionado;
     private Integer minutoSeleccionado;
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
     private final CollectionReference UserCollection = firestore.collection("roles");
     private FusedLocationProviderClient fusedLocationClient;
-
+    private String rol_usuario;
     ReporteViewModel ViewModelRep = new ReporteViewModel();
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,44 +76,59 @@ public class AddReportActivity extends AppCompatActivity {
         setContentView(R.layout.activity_add_record);
         MobileAds.initialize(this, initializationStatus -> {});
         Bundle bundle = getIntent().getExtras();
+        Button submit_btn = findViewById(R.id.edit_btn);
+        Button back_btn = findViewById(R.id.back_btn);
+        Button btnSelectImage = findViewById(R.id.btnSelectImage);
+        EditText descTv = findViewById(R.id.Tv_desc);
+        imageView = findViewById(R.id.imageView);
+        ToggleButton toggleButtonRecord = findViewById(R.id.BtnRecord);
 
-        DocumentReference docRef = UserCollection.document(bundle.getString("userUid"));
-        docRef.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-                if (document.exists()) {
+        ViewModelRep.GetUserRol(bundle.getString("userUid"));
+        ViewModelRep.getRolUsuario().observe(this, rol -> {
+            if (rol != null) {
+                rol_usuario = rol;
+                if (rol_usuario.equals("usuario")){
 
-                    String rol_usuario = document.getString("rol");
-                    if (rol_usuario.equals("usuario")){
+                    AdView adView = findViewById(R.id.adView1);
 
-                        AdView adView = findViewById(R.id.adView1);
+                    // Configura el listener para depuración
+                    adView.setAdListener(new AdListener() {
+                        @Override
+                        public void onAdLoaded() {
+                            Log.d("AdMob", "Anuncio cargado correctamente");
+                        }
 
-                        // Configura el listener para depuración
-                        adView.setAdListener(new AdListener() {
-                            @Override
-                            public void onAdLoaded() {
-                                Log.d("AdMob", "Anuncio cargado correctamente");
-                            }
+                        @Override
+                        public void onAdFailedToLoad(LoadAdError adError) {
+                            Log.e("AdMob", "Error al cargar anuncio: " + adError.getMessage());
+                        }
+                    });
 
-                            @Override
-                            public void onAdFailedToLoad(LoadAdError adError) {
-                                Log.e("AdMob", "Error al cargar anuncio: " + adError.getMessage());
-                            }
-                        });
+                    // Carga el anuncio
+                    AdRequest adRequest = new AdRequest.Builder().build();
+                    adView.loadAd(adRequest);
 
-                        // Carga el anuncio
-                        AdRequest adRequest = new AdRequest.Builder().build();
-                        adView.loadAd(adRequest);
+                }
 
-                    }
-                } else {
+                else if (rol_usuario.equals("Premium")){
+                    toggleButtonRecord.setVisibility(VISIBLE);
+                    toggleButtonRecord.setOnCheckedChangeListener((buttonView, isChecked) -> {
+                        if (isChecked) {
+                            // Si se activa el ToggleButton, inicia grabación
+                            startRecording();
+                        } else {
+                            // Si se desactiva el ToggleButton, detiene la grabación
+                            stopRecording();
+                        }
+                    });
+                }
+
+                else {
                     Log.d("Firestore", "No existe el documento");
                 }
-            } else {
-                Log.e("Firestore", "Error obteniendo el documento", task.getException());
+                // Aquí puedes realizar acciones que dependan del rol
             }
         });
-
 
 
 
@@ -166,11 +189,6 @@ public class AddReportActivity extends AppCompatActivity {
             }
         });
 
-        Button submit_btn = findViewById(R.id.edit_btn);
-        Button back_btn = findViewById(R.id.back_btn);
-        Button btnSelectImage = findViewById(R.id.btnSelectImage);
-        EditText descTv = findViewById(R.id.Tv_desc);
-        imageView = findViewById(R.id.imageView);
 
         btnSelectImage.setOnClickListener(v -> openCamera());
 
@@ -188,7 +206,7 @@ public class AddReportActivity extends AppCompatActivity {
             if (!horasVidaString.isEmpty()) {
                 horasVida = Long.parseLong(horasVidaString);
             }
-            ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida,descString);
+            ViewModelRep.addReport(tipoSeleccionado,fecha,autor,""+lat,""+log,Boolean.FALSE,cameraImageUri,horasVida,descString,audioUri);
             Toast.makeText(this, "Agregando reporte, espere un momento...", Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(() -> {
@@ -250,8 +268,14 @@ public class AddReportActivity extends AppCompatActivity {
     private void requestPermissions() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED ||
-                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(new String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE}, 100);
+                    checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+                    checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+
+                requestPermissions(new String[]{
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                        Manifest.permission.RECORD_AUDIO
+                }, 100);
             }
         }
     }
@@ -266,22 +290,41 @@ public class AddReportActivity extends AppCompatActivity {
                 Toast.makeText(this, "Permisos denegados", Toast.LENGTH_SHORT).show();
             }
         }
+
     }
-    // Create a new ad view.
+    private void startRecording() {
+        try {
+            // Ruta para guardar el archivo de audio
+            File storageDir = getApplicationContext().getExternalFilesDir(null);
+            audioFile = File.createTempFile("audio_", ".3gp", storageDir);
 
-    public AdSize getAdSize() {
-        DisplayMetrics displayMetrics = getResources().getDisplayMetrics();
-        int adWidthPixels = displayMetrics.widthPixels;
+            mediaRecorder = new MediaRecorder();
+            mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mediaRecorder.setOutputFile(audioFile.getAbsolutePath());
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowMetrics windowMetrics = this.getWindowManager().getCurrentWindowMetrics();
-            adWidthPixels = windowMetrics.getBounds().width();
+            mediaRecorder.prepare();
+            mediaRecorder.start();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Error al iniciar grabación: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         }
-
-        float density = displayMetrics.density;
-        int adWidth = (int) (adWidthPixels / density);
-        return AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(this, adWidth);
     }
+    private void stopRecording() {
+        if (mediaRecorder != null) {
+            mediaRecorder.stop();
+            mediaRecorder.release();
+            mediaRecorder = null;
+
+        }
+        if (audioFile != null) {
+            audioUri = Uri.fromFile(audioFile); // Convertir el archivo a URI
+            Toast.makeText(this, "Audio grabado: " + audioUri.toString(), Toast.LENGTH_LONG).show();
+        }
+    }
+
+
 
 
 

@@ -57,9 +57,10 @@ public class Reportes {
 
     private int tiempoDeVida; // Tiempo de vida en horas
     private String desc;
+    private String audioUrl;
 
 
-    public Reportes(String id, String tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl, int tiempoDeVida, String desc) {
+    public Reportes(String id, String tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl, int tiempoDeVida, String desc, String audioUrl) {
         this.id = id;
         this.tipo = tipo;
         this.fecha = fecha;
@@ -70,6 +71,7 @@ public class Reportes {
         this.image_url = imageUrl;
         this.tiempoDeVida = tiempoDeVida;
         this.desc = desc;
+        this.audioUrl = audioUrl;
     }
 
     public String getLat() {
@@ -110,5 +112,13 @@ public class Reportes {
 
     public void setDesc(String desc) {
         this.desc = desc;
+    }
+
+    public String getAudioUrl() {
+        return audioUrl;
+    }
+
+    public void setAudioUrl(String audioUrl) {
+        this.audioUrl = audioUrl;
     }
 }

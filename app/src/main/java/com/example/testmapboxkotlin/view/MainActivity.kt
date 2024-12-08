@@ -1,13 +1,13 @@
 package com.example.testmapboxkotlin.view
+
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Color
+import android.media.MediaPlayer
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -16,9 +16,6 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.ResourceManagerInternal.get
-import androidx.compose.material3.DividerDefaults.color
-import androidx.lifecycle.ViewModelProvider
 import com.bumptech.glide.Glide
 import com.example.testmapboxkotlin.LocationManager
 import com.example.testmapboxkotlin.R
@@ -33,7 +30,9 @@ import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
 import com.mapbox.geojson.Point
+import com.mapbox.maps.CameraBoundsOptions
 import com.mapbox.maps.CameraOptions
+import com.mapbox.maps.CoordinateBounds
 import com.mapbox.maps.MapView
 import com.mapbox.maps.extension.style.expressions.dsl.generated.literal
 import com.mapbox.maps.extension.style.expressions.generated.Expression
@@ -46,12 +45,12 @@ import com.mapbox.maps.extension.style.sources.addSource
 import com.mapbox.maps.extension.style.sources.generated.GeoJsonSource
 import com.mapbox.maps.plugin.PuckBearing
 import com.mapbox.maps.plugin.annotation.annotations
-import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions
 import com.mapbox.maps.plugin.annotation.generated.createPointAnnotationManager
 import com.mapbox.maps.plugin.locationcomponent.createDefault2DPuck
 import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.viewport
+import kotlin.collections.set
 
 class MainActivity : AppCompatActivity() {
 
@@ -63,7 +62,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var currentUserUid :String
     private lateinit var currentUserName : String
     private var currentUserImage : Uri? = null
+    private var mediaPlayer: MediaPlayer? = null
+    private var audioUri: Uri? = null
+    private var rol_usuario: String? = null
     private val comunaVwm : ComunaViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -78,17 +81,24 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
         }
-
+        reportVwModel.GetUserRol(currentUserUid)
+        reportVwModel.getRolUsuario().observe(this){rol->
+            rol_usuario = rol
+            limiteCam(rol)
+            showPremiumFunctions()
+        }
         mapView = findViewById(R.id.mapView)
-        showPremiumFunctions()
         addReporteMarker()
         reportVwModel.getAllReport()
         //Uso de el manager de locacion
         locationManager = LocationManager(this)
         // Obtener view del mapa
 
-        //val reporteViewModel = ViewModelProvider(this).get(ReporteViewModel::class.java)
 
+
+
+
+// Define camera bounds
 
         //Marcadores
 
@@ -161,6 +171,7 @@ class MainActivity : AppCompatActivity() {
 
         })
 
+
         // Create a map programmatically and set the initial camera
 
         mapView.mapboxMap.setCamera(
@@ -186,7 +197,12 @@ class MainActivity : AppCompatActivity() {
         }
 
 
+
+
+
+
     }
+
     private fun cargarComunas(originalMap: Boolean) {
         val inputStream = resources.openRawResource(R.raw.comunas_santiago)
         val geoJsonString = inputStream.bufferedReader().use { it.readText() } // Leer contenido del archivo
@@ -267,7 +283,34 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+    private fun limiteCam(rol:String){
+        var kmRange = 10000000
+        if (rol.equals("usuario")){
+            kmRange = 2
+        }
+        else if (rol.equals("Basico")){
+            kmRange = 10
+        }
+        else if (rol.equals("Premium")){
+            kmRange = 100
+        }
 
+        locationManager.getCurrentLocation { lat, lon ->
+            val latDiff = kmRange / 111.0 // 1° en latitud es ~111 km
+            val lonDiff = kmRange / (111.0 * Math.cos(Math.toRadians(lat)))
+
+            val northeast = Point.fromLngLat(lon + lonDiff, lat + latDiff)
+            val southwest = Point.fromLngLat(lon - lonDiff, lat - latDiff)
+
+            val bounds = CoordinateBounds(southwest, northeast)
+
+            val cameraBoundOptions = CameraBoundsOptions.Builder()
+                .bounds(bounds)
+                .build()
+            mapView.mapboxMap.setBounds(cameraBoundOptions)
+
+        }
+    }
     private fun addReporteMarker(){
         Log.d("mark","ejecutando")
         val annotationApi = mapView.annotations
@@ -329,21 +372,27 @@ class MainActivity : AppCompatActivity() {
 
     }
     private fun showPremiumFunctions(){  //Revisa el rol del usuario, y en el caso de tener premium, muestra funciones especiales.
-        FirebaseFirestore.getInstance().collection("roles").document(currentUserUid).get()
-            .addOnSuccessListener { document ->
-                if (document.exists()) {
-                    val rol = document.getString("rol") ?: "usuario" // Valor predeterminado si no se encuentra el rol
+
                     val btnChangeMap = findViewById<ImageButton>(R.id.btn_changeMap)
 
                     // Administrador: siempre puede editar y borrar
-                    if (rol == "Premium") {
+                    if (rol_usuario.equals("Premium")) {
                         btnChangeMap.visibility = View.VISIBLE
 
                     }
+                    else{
+                        Log.d("usuraioNoPremium","no premium")
 
-                }
-            }
+                    }
 
+
+
+
+    }
+    override fun onDestroy() { //Cierra el mediaplayer al termianr la actividad
+        super.onDestroy()
+        mediaPlayer?.release() // Libera los recursos
+        mediaPlayer = null
     }
     private fun showInfoWindow(report: Reportes) {
         // Inflar el diseño del diálogo personalizado
@@ -361,67 +410,96 @@ class MainActivity : AppCompatActivity() {
         val imageView = view.findViewById<ImageView>(R.id.dialog_image)
         val titleView = view.findViewById<TextView>(R.id.dialog_title)
         val authorView = view.findViewById<TextView>(R.id.dialog_author)
+        val btnPlayAudio = view.findViewById<Button>(R.id.btnPlayAudio)
         val btnRpt = view.findViewById<ImageButton>(R.id.btn_rpt)
         val btnAddFav =
             view.findViewById<ImageButton>(R.id.btn_add_fav) // Nuevo botón para agregar a favoritos
         val descView = view.findViewById<TextView>(R.id.tv_desc)
 
         if (currentUserUid != null) {
-            FirebaseFirestore.getInstance().collection("roles").document(currentUserUid).get()
-                .addOnSuccessListener { document ->
-                    if (document.exists()) {
-                        val rol = document.getString("rol") ?: "usuario" // Valor predeterminado si no se encuentra el rol
-                        val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
-                        val btnEditReport = view.findViewById<ImageButton>(R.id.btn_edit)
+            reportVwModel.getRolUsuario().observe(this){rol->
+                val btnDeleteReport = view.findViewById<ImageButton>(R.id.btn_delete)
+                val btnEditReport = view.findViewById<ImageButton>(R.id.btn_edit)
+                // Administrador: siempre puede editar y borrar
+                if (rol == "administrador") {
+                    btnDeleteReport.visibility = View.VISIBLE
+                    btnEditReport.visibility = View.VISIBLE
 
-                        // Administrador: siempre puede editar y borrar
-                        if (rol == "administrador") {
-                            btnDeleteReport.visibility = View.VISIBLE
-                            btnEditReport.visibility = View.VISIBLE
-
-                            btnEditReport.setOnClickListener {
-                                val intent = Intent(this, EditReportActivity::class.java).apply {
-                                    putExtra("reporteId", report.id)
-                                }
-                                startActivity(intent)
-                            }
-
-                            btnDeleteReport.setOnClickListener {
-                                reportVwModel.deleteReport(report.id)
-                                currentDialog.dismiss()
-                            }
+                    btnEditReport.setOnClickListener {
+                        val intent = Intent(this, EditReportActivity::class.java).apply {
+                            putExtra("reporteId", report.id)
                         }
-                        // Usuario: solo puede editar y borrar sus propios reportes
-                        else if (currentUserEmail == report.autor) {
-                            btnDeleteReport.visibility = View.VISIBLE
-                            btnEditReport.visibility = View.VISIBLE
+                        startActivity(intent)
+                    }
 
-                            btnEditReport.setOnClickListener {
-                                val intent = Intent(this, EditReportActivity::class.java).apply {
-                                    putExtra("reporteId", report.id)
-
-                                }
-                                startActivity(intent)
-                            }
-
-                            btnDeleteReport.setOnClickListener {
-                                reportVwModel.deleteReport(report.id)
-                                Toast.makeText(this,"Reporte eliminado.",Toast.LENGTH_SHORT)
-                                currentDialog.dismiss()
-                            }
-                        }
-                        // Si el usuario no es administrador ni autor del reporte, no hace nada
-                        else {
-                            Log.d("Debug", "El usuario no tiene permisos para editar o borrar este reporte.")
-                        }
-                    } else {
-                        Log.e("Firestore", "No se encontró un rol para el usuario actual.")
+                    btnDeleteReport.setOnClickListener {
+                        reportVwModel.deleteReport(report.id)
+                        currentDialog.dismiss()
                     }
                 }
-                .addOnFailureListener { e ->
-                    Log.e("FirestoreError", "Error al obtener el rol: ${e.message}")
+                // Usuario: solo puede editar y borrar sus propios reportes
+
+                else if (currentUserEmail == report.autor) {
+                    btnDeleteReport.visibility = View.VISIBLE
+                    btnEditReport.visibility = View.VISIBLE
+
+                    btnEditReport.setOnClickListener {
+                        val intent = Intent(this, EditReportActivity::class.java).apply {
+                            putExtra("reporteId", report.id)
+
+                        }
+                        startActivity(intent)
+                    }
+
+                    btnDeleteReport.setOnClickListener {
+                        reportVwModel.deleteReport(report.id)
+                        Toast.makeText(this,"Reporte eliminado.",Toast.LENGTH_SHORT)
+                        currentDialog.dismiss()
+                    }
+                    if (rol=="Premium"&&report.audioUrl!=null){
+                        btnPlayAudio.visibility = View.VISIBLE
+                        Log.d("audioUrl",report.audioUrl)
+                        audioUri = Uri.parse(report.audioUrl)
+                        if (audioUri!=null){
+                            btnPlayAudio.setOnClickListener {
+                                if (mediaPlayer == null) {
+                                    try {
+                                        mediaPlayer = MediaPlayer().apply {
+                                            setDataSource(this@MainActivity, audioUri!!)
+                                            prepare() // Prepara el audio
+                                            start()   // Inicia la reproducción
+                                        }
+                                        Toast.makeText(this, "Reproduciendo audio...", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                        Toast.makeText(this, "Error al reproducir audio: ${e.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                    btnPlayAudio.text = "Detener Audio"
+                                } else {
+                                    mediaPlayer?.release() // Libera los recursos
+                                    mediaPlayer = null
+                                    Toast.makeText(this, "Audio detenido", Toast.LENGTH_SHORT).show()
+                                    btnPlayAudio.text = "Reproducir Audio"
+
+                                }
+
+
+                            }
+                        }
+                        else{Log.d("error","audio no encontrado")}
+                    }
                 }
-        }
+                // Si el usuario no es administrador ni autor del reporte, no hace nada
+                else {
+                    Log.d("Debug", "El usuario no tiene permisos para editar o borrar este reporte.")
+                }
+                }
+            }
+
+
+
+
+
             // Glide es una libreria que carga imagenes de url
             Log.d("TAG IMAGEN", report.image_url)
             Glide.with(this)

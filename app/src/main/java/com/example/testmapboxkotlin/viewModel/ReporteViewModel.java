@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModel;
 import com.example.testmapboxkotlin.model.Reportes;
 import com.example.testmapboxkotlin.view.MainActivity;
 import com.google.firebase.database.annotations.Nullable;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -36,6 +37,9 @@ public class ReporteViewModel extends ViewModel {
     private final MutableLiveData<List<Reportes>> listaReportesLiveData = new MutableLiveData<>();
     private final MutableLiveData<List<Reportes>> listaFavoritosLiveData = new MutableLiveData<>();
     private MutableLiveData<Boolean> deleteReportSuccess = new MutableLiveData<>();
+    StorageReference audioRef;
+    private final CollectionReference UserCollection = firestore.collection("roles");
+
 
     public LiveData<Boolean> getDeleteReportSuccess() {
         return deleteReportSuccess;
@@ -46,6 +50,24 @@ public class ReporteViewModel extends ViewModel {
     }
 
     public LiveData<List<Reportes>> getListaReportes() {return listaReportesLiveData;
+    }
+    private MutableLiveData<String> rolUsuario = new MutableLiveData<>();
+
+    public void GetUserRol(String userUid) {
+        DocumentReference docRef = UserCollection.document(userUid);
+        docRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    String rol = document.getString("rol");
+                    rolUsuario.setValue(rol);
+                }
+            }
+        });
+    }
+
+    public LiveData<String> getRolUsuario() {
+        return rolUsuario;
     }
     public void EditReport(String id,String Tipo,String desc) {
         for (Reportes r : listaReportes) {
@@ -87,23 +109,61 @@ public class ReporteViewModel extends ViewModel {
                     Log.e("Firestore", "Error al eliminar el reporte", e);
                 });
     }
-    public void addReport(String Tipo, Date fecha,String autor, String lat, String log, Boolean denunciado, Uri imagen_uri,Long horasVida,String desc) {
-        String reportId = ""+Math.random()*10;
+    public void addReport(String Tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, Uri imagen_uri, Long horasVida, String desc, Uri audio_uri) {
+        String reportId = "" + Math.random() * 10;
         String imageName = "imagenes/" + reportId + ".jpg";
-        StorageReference imageRef = storage.getReference().child(imageName);
-        imageRef.putFile(imagen_uri).addOnSuccessListener(taskSnapshot -> {
-            imageRef.getDownloadUrl().addOnSuccessListener(url -> {
-                String imageUrl = url.toString();
-                Log.d("TAG IMAGE URL",imageUrl);
-                Reportes report = new Reportes(reportId,Tipo, fecha,autor,lat,log,denunciado,imageUrl,horasVida.intValue(),desc);
-                ReportCollection.
-                        document(report.getId()).
-                        set(report);
-            });
-        });
-        // Crea un nuevo objeto Modelo y lo agrega a Firebase
+        String audioName = "audios/" + reportId;
 
-        Log.d("PEPEXD",""+listaReportes.size());
+        StorageReference audioRef = storage.getReference().child(audioName);
+        StorageReference imageRef = storage.getReference().child(imageName);
+
+        // Subir imagen si existe
+        if (imagen_uri != null) {
+            imageRef.putFile(imagen_uri).addOnSuccessListener(taskSnapshot -> {
+                imageRef.getDownloadUrl().addOnSuccessListener(url -> {
+                    handleAudioUpload(audio_uri, url.toString(), reportId, Tipo, fecha, autor, lat, log, denunciado, horasVida, desc);
+                }).addOnFailureListener(e -> {
+                    handleAudioUpload(audio_uri, null, reportId, Tipo, fecha, autor, lat, log, denunciado, horasVida, desc);
+                });
+            }).addOnFailureListener(e -> {
+                handleAudioUpload(audio_uri, null, reportId, Tipo, fecha, autor, lat, log, denunciado, horasVida, desc);
+            });
+        } else {
+            // Si no hay imagen, procedemos directamente con el audio
+            String placeholderImageUrl = "https://developers.elementor.com/docs/assets/img/elementor-placeholder-image.png";
+            handleAudioUpload(audio_uri, placeholderImageUrl, reportId, Tipo, fecha, autor, lat, log, denunciado, horasVida, desc);
+        }
+    }
+
+    private void handleAudioUpload(Uri audio_uri, String imageUrl, String reportId, String Tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, Long horasVida, String desc) {
+        StorageReference audioRef = storage.getReference().child("audios/" + reportId);
+
+        if (audio_uri != null) {
+            audioRef.putFile(audio_uri).addOnSuccessListener(taskSnapshot1 -> {
+                audioRef.getDownloadUrl().addOnSuccessListener(urlaudio -> {
+                    String audioUrl = urlaudio.toString();
+                    createReport(reportId, Tipo, fecha, autor, lat, log, denunciado, imageUrl, horasVida.intValue(), desc, audioUrl);
+                }).addOnFailureListener(e -> {
+                    createReport(reportId, Tipo, fecha, autor, lat, log, denunciado, imageUrl, horasVida.intValue(), desc, null);
+                });
+            }).addOnFailureListener(e -> {
+                createReport(reportId, Tipo, fecha, autor, lat, log, denunciado, imageUrl, horasVida.intValue(), desc, null);
+            });
+        } else {
+            // Si no hay audio, asignar el mensaje por defecto
+            createReport(reportId, Tipo, fecha, autor, lat, log, denunciado, imageUrl, horasVida.intValue(), desc, null);
+        }
+    }
+
+    private void createReport(String reportId, String Tipo, Date fecha, String autor, String lat, String log, Boolean denunciado, String imageUrl, int horasVida, String desc, String audioUrl) {
+        Reportes report = new Reportes(reportId, Tipo, fecha, autor, lat, log, denunciado, imageUrl, horasVida, desc, audioUrl);
+        ReportCollection.document(report.getId())
+                .set(report)
+                .addOnSuccessListener(task -> {
+                    Log.d("Report", "Report successfully created!");
+                }).addOnFailureListener(e -> {
+                    Log.e("Report", "Failed to save report", e);
+                });
     }
 
 
@@ -133,7 +193,8 @@ public class ReporteViewModel extends ViewModel {
                         String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
                         Integer tiempoDeVida = document.getLong("tiempoDeVida").intValue();
                         String desc = document.getString("desc");
-                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida,desc);
+                        String audio_url=document.getString("audioUrl");
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida,desc,audio_url);
                         if (report != null) {
                             listaReportes.add(report);
                             listaReportesLiveData.setValue(listaReportes);
@@ -182,7 +243,8 @@ public class ReporteViewModel extends ViewModel {
                         String image_url = document.getString("image_url"); //los nombres deben ser iguales a los del modelo
                         Integer tiempoDeVida = document.getLong("tiempoDeVida").intValue();
                         String desc = document.getString("desc");
-                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida,desc);
+                        String audio_url=document.getString("audioUrl");
+                        Reportes report = new Reportes(id, tipo, fecha, autor, lat, log, denunciado,image_url,tiempoDeVida,desc,audio_url);
                         if (report != null) {
                             listaFavoritos.add(report);
                             listaFavoritosLiveData.setValue(listaFavoritos);

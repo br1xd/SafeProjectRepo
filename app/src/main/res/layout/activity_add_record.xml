@@ -73,6 +73,11 @@
             android:layout_marginBottom="8dp"
             android:orientation="vertical">
 
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"></LinearLayout>
+
             <TextView
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
@@ -111,7 +116,6 @@
                 app:boxStrokeWidth="5px"
                 app:endIconMode="clear_text"
                 app:endIconTint="@color/black"
-                app:helperText="Ingresa una descripción"
                 app:helperTextEnabled="true"
                 app:hintAnimationEnabled="true">
 
@@ -127,6 +131,29 @@
                     android:textColor="#000000"
                     android:textSize="16sp" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="horizontal">
+
+                    <ToggleButton
+                        android:id="@+id/BtnRecord"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:button="@android:drawable/ic_btn_speak_now"
+                        android:textOff="Iniciar Grabación"
+                        android:textOn="Grabando..."
+                        android:visibility="gone" />
+                </LinearLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
 
