@@ -4,6 +4,7 @@ plugins {
     id("com.google.gms.google-services")
     id("org.jetbrains.kotlin.plugin.compose")
 }
+apply(plugin = ("com.google.gms.google-services") )
 
 android {
     namespace = "com.example.testmapboxkotlin"
@@ -53,6 +54,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-ads:23.6.0")
     implementation ("com.github.bumptech.glide:glide:4.15.1")
     implementation("androidx.activity:activity:1.9.3")
+    implementation("com.google.firebase:firebase-messaging-ktx:24.1.0")
     annotationProcessor ("com.github.bumptech.glide:compiler:4.15.1")
     implementation ("com.google.android.material:material:1.9.0")
     implementation("com.google.firebase:firebase-storage:20.2.1")

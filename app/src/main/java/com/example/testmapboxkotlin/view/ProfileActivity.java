@@ -38,6 +38,7 @@ import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
     private final FirebaseFirestore firestore = FirebaseFirestore.getInstance();
+    private final CollectionReference TokenCollection = firestore.collection("Tokens");
     private final CollectionReference UserCollection = firestore.collection("roles");
     private final CollectionReference VentasCollection = firestore.collection("registro-ventas");
     private final CollectionReference TotalVentasCollection = firestore.collection("ventas-totales");
@@ -144,6 +145,7 @@ public class ProfileActivity extends AppCompatActivity {
                 Log.d("SignOut", "User is signed out of Google.");
             });
             mAuth.signOut();
+            TokenCollection.document(userUid).delete();
             Intent i= new Intent(ProfileActivity.this, AuthActivity.class);
             startActivity(i);
             overridePendingTransition(R.anim.slide_in_reverse, R.anim.slide_out_reverse);

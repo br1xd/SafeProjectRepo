@@ -1,6 +1,9 @@
 package com.example.testmapboxkotlin.view
 
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
@@ -26,6 +29,9 @@ import com.example.testmapboxkotlin.viewModel.ReporteViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.messaging.FirebaseMessagingService
+import com.google.firebase.messaging.RemoteMessage
 import com.google.gson.JsonObject
 import com.mapbox.android.core.permissions.PermissionsListener
 import com.mapbox.android.core.permissions.PermissionsManager
@@ -52,6 +58,21 @@ import com.mapbox.maps.plugin.locationcomponent.location
 import com.mapbox.maps.plugin.viewport.viewport
 import kotlin.collections.set
 
+class MyFirebaseMessagingService : FirebaseMessagingService() {
+    override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        super.onMessageReceived(remoteMessage)
+
+        // Extrae los datos o la notificación
+        val title = remoteMessage.notification?.title ?: "Mensaje"
+        val body = remoteMessage.notification?.body ?: "Tienes un nuevo mensaje"
+
+        // Envía un broadcast con los datos del mensaje
+        val intent = Intent("com.example.NEW_MESSAGE")
+        intent.putExtra("title", title)
+        intent.putExtra("body", body)
+        sendBroadcast(intent)
+    }
+}
 class MainActivity : AppCompatActivity() {
 
     private lateinit var locationManager: LocationManager
@@ -66,6 +87,10 @@ class MainActivity : AppCompatActivity() {
     private var audioUri: Uri? = null
     private var rol_usuario: String? = null
     private val comunaVwm : ComunaViewModel by viewModels()
+    val messageReceiver : BroadcastReceiver
+        get() {
+            TODO()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,12 +106,77 @@ class MainActivity : AppCompatActivity() {
         } else {
             Toast.makeText(this, "Por favor, inicia sesión", Toast.LENGTH_SHORT).show()
         }
+        val messageReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context?, intent: Intent?) {
+                val title = intent?.getStringExtra("title") ?: "Mensaje"
+                val body = intent?.getStringExtra("body") ?: "Tienes un nuevo mensaje"
+
+                // Muestra la ventana con el mensaje
+                showBanner(title, body)
+            }
+        }
+
+        // Registra el receptor
+        registerReceiver(messageReceiver, IntentFilter("com.example.NEW_MESSAGE"),
+            RECEIVER_NOT_EXPORTED
+        )
+
         reportVwModel.GetUserRol(currentUserUid)
         reportVwModel.getRolUsuario().observe(this){rol->
+            val db = FirebaseFirestore.getInstance()
             rol_usuario = rol
             limiteCam(rol)
-            showPremiumFunctions()
+            if (rol.equals("Basico")||rol.equals("Premium")){
+
+                if (rol.equals("Premium")){
+                    showPremiumFunctions()
+                }
+
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        Log.w("FCM", "Fallo al obtener el token", task.exception)
+                        return@addOnCompleteListener
+                    }
+                    val token = task.result
+                    if (currentUserUid != null) {
+                        val userTokenData = hashMapOf("token" to token)
+                        db.collection("Tokens").document(currentUserUid).set(userTokenData)
+                            .addOnSuccessListener {
+                                Log.d("FCM", "Token guardado exitosamente")
+                            }
+                            .addOnFailureListener { e ->
+                                Log.w("FCM", "Error guardando token", e)
+                            }
+                    }
+                }
+
+            }
+            else if (rol.equals("usuario")){
+                if (currentUserUid != null) {
+                    // Verifica si el documento existe antes de intentar borrarlo
+                    db.collection("Tokens").document(currentUserUid).get()
+                        .addOnSuccessListener { document ->
+                            if (document.exists()) {
+                                // El documento existe, procede a borrarlo
+                                db.collection("Tokens").document(currentUserUid).delete()
+                                    .addOnSuccessListener {
+                                        Log.d("FCM", "Documento borrado exitosamente")
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Log.w("FCM", "Error al borrar el documento", e)
+                                    }
+                            } else {
+                                Log.d("FCM", "El documento no existe, no se puede borrar")
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            Log.w("FCM", "Error al verificar si el documento existe", e)
+                        }
+                }
+            }
+
         }
+
         mapView = findViewById(R.id.mapView)
         addReporteMarker()
         reportVwModel.getAllReport()
@@ -311,6 +401,8 @@ class MainActivity : AppCompatActivity() {
 
         }
     }
+
+
     private fun addReporteMarker(){
         Log.d("mark","ejecutando")
         val annotationApi = mapView.annotations
@@ -391,6 +483,7 @@ class MainActivity : AppCompatActivity() {
     }
     override fun onDestroy() { //Cierra el mediaplayer al termianr la actividad
         super.onDestroy()
+        unregisterReceiver(messageReceiver)
         mediaPlayer?.release() // Libera los recursos
         mediaPlayer = null
     }
@@ -562,5 +655,27 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+    private fun showBanner(title: String, body: String) {
+        val banner = findViewById<View>(R.id.banner)
+        val bannerTitle = findViewById<TextView>(R.id.banner_title)
+        val bannerBody = findViewById<TextView>(R.id.banner_body)
+        bannerTitle.text = title
+        bannerBody.text = body
+
+        // Mostrar el banner
+        banner.visibility = View.VISIBLE
+        banner.animate().translationY(0f).setDuration(300).start()
+
+        // Ocultar el banner después de 3 segundos
+        banner.postDelayed({
+            hideBanner(banner)
+        }, 30000)
+    }
+
+    private fun hideBanner(banner: View) {
+        banner.animate().translationY(-banner.height.toFloat()).setDuration(300).withEndAction {
+            banner.visibility = View.GONE
+        }.start()
+    }
 
 }
