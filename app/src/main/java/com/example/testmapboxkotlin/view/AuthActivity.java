@@ -25,6 +25,7 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -110,6 +111,8 @@ public class AuthActivity extends AppCompatActivity {
                                         // Si no existe, registrar el rol predeterminado
                                         Map<String, Object> userRole = new HashMap<>();
                                         userRole.put("rol", "usuario");
+                                        db.collection("ventas-totales").document("Ingresos").update("total-usuarios-registrados", FieldValue.increment(1));
+
 
                                         db.collection("roles").document(user.getUid())
                                                 .set(userRole)

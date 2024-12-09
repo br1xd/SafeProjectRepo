@@ -110,6 +110,7 @@ public class ProfileActivity extends AppCompatActivity {
             Double precio = Double.parseDouble(VentaReg.get("precio").toString());
             VentasCollection.document().set(VentaReg);
             TotalVentasCollection.document("Ingresos").update("ingresos-premium",FieldValue.increment(precio));
+            TotalVentasCollection.document("Ingresos").update("veces-de-compra-Premium",FieldValue.increment(1));
             UserCollection.document(userUid).set(userRole);
             premium_btn.setText("Comprado");
             premium_btn.setAlpha(0.98f);
@@ -130,7 +131,7 @@ public class ProfileActivity extends AppCompatActivity {
 
             Double precio = Double.parseDouble(VentaReg.get("precio").toString());
             TotalVentasCollection.document("Ingresos").update("ingresos-basicos",FieldValue.increment(precio));
-
+            TotalVentasCollection.document("Ingresos").update("veces-de-compra-Basico",FieldValue.increment(1));
             VentasCollection.document().set(VentaReg);
             UserCollection.document(userUid).set(userRole);
             basico_btn.setText("Comprado");
